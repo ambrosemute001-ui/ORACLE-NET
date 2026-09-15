@@ -802,6 +802,9 @@ function loadScriptFallback(fallbackSrc){
       </div>
       
       <div id="gateStepWho">
+        <button type="button" class="gate-back-btn" onclick="backToMarketingSite()">
+          <span aria-hidden="true">←</span> <span data-i18n="gate_back_to_site">Back to homepage</span>
+        </button>
         <h2 data-i18n="gate_who_title">Who's here?</h2>
         <div class="who-grid">
           <div class="who-card" onclick="selectGateRole('citizen')">
@@ -1041,7 +1044,7 @@ function loadScriptFallback(fallbackSrc){
       <span class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13"/><polyline points="14 4 17 8 14 12"/><path d="M20 16H7"/><polyline points="10 20 7 16 10 12"/></svg></span>
       <span class="tab-label" data-i18n="nav_recycler">Recycler Pickups</span>
     </button>
-    <button class="tab-btn" data-tab="marketplace" data-roles="citizen">
+    <button class="tab-btn" data-tab="marketplace" data-roles="citizen,admin,recycler,repairer">
       <span class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
       <span class="tab-label" data-i18n="nav_marketplace">Marketplace</span>
     </button>
@@ -2481,7 +2484,7 @@ en: {
   impact_points:"Community points earned",
   label_confirm_password:"Confirm new password", btn_set_password:"Set new password",
   gate_eyebrow:"Oracle Net · Access", gate_title:"Sign in", gate_subtitle:"Sign in with your Oracle Net credentials.",
-  gate_who_title:"Who's here?", gate_who_subtitle:"Select your role to continue to Oracle Net.", gate_back:"Change role",
+  gate_who_title:"Who's here?", gate_who_subtitle:"Select your role to continue to Oracle Net.", gate_back:"Change role", gate_back_to_site:"Back to homepage",
   role_citizen_title:"Citizen", role_citizen_desc:"Report items, donate or sell, and track the journey.",
   role_admin_title:"Municipal Admin", role_admin_desc:"Assign items to the right recovery path.",
   role_recycler_title:"Recycler Cooperative", role_recycler_desc:"Receive recyclable materials and manage pickups.",
@@ -2626,7 +2629,7 @@ es: {
   impact_points:"Puntos comunitarios acumulados",
   label_confirm_password:"Confirmar nueva contraseña", btn_set_password:"Guardar nueva contraseña",
   gate_eyebrow:"Oracle Net · Acceso", gate_title:"Iniciar sesión", gate_subtitle:"Inicia sesión con tus credenciales de Oracle Net.",
-  gate_who_title:"¿Quién eres?", gate_who_subtitle:"Selecciona tu rol para continuar a Oracle Net.", gate_back:"Cambiar de rol",
+  gate_who_title:"¿Quién eres?", gate_who_subtitle:"Selecciona tu rol para continuar a Oracle Net.", gate_back:"Cambiar de rol", gate_back_to_site:"Volver al inicio",
   role_citizen_title:"Ciudadano", role_citizen_desc:"Reporta residuos, sigue tus Puntos de Impacto.",
   role_admin_title:"Administrador Municipal", role_admin_desc:"Cola, puntos críticos, panel.",
   role_recycler_title:"Cooperativa de Reciclaje", role_recycler_desc:"Recolecciones e ingresos.",
@@ -3112,6 +3115,12 @@ function renderPublicMarketplace(){
 function enterPortal(){
   document.getElementById('publicSite').style.display = 'none';
   showGate();
+}
+function backToMarketingSite(){
+  document.getElementById('roleGate').style.display = 'none';
+  const pub = document.getElementById('publicSite');
+  if(pub) pub.style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 function submitContactForm(){
   const name = document.getElementById('contactName').value.trim();
@@ -3649,15 +3658,16 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
     pointsLedger[pointsKey] = (pointsLedger[pointsKey]||0) + points;
     const bulky = rule.bulky !== undefined ? rule.bulky : /mattress|colch|sofa|couch|sill[oó]n|canap|wardrobe|armario|closet|armoire|fridge|refrigerator|nevera|washing machine|lavadora|construction|debris|escombro|rubble|bed frame|\bcama\b|\btable\b|\bmesa\b|\bdoor\b|puerta|air conditioner|cabinet|gabinete|carpet|rug|alfombra|garden waste|yard waste|ramas/i.test((rule.type||'') + ' ' + item.desc);
 
+    const wantsMarketRoute = !!selectedMarketChoice && !flaggedHazard;
     const report = {
       id: reportSeq++, citizen, locality, localityBucket,
       lat: geo.lat, lon: geo.lon, precise: geo.precise,
       type: rule.type, condition, description: item.desc,
-      status: condition === 'good' && selectedMarketChoice ? 'marketplace' : 'pending',
-      route: condition === 'good' && selectedMarketChoice ? (wantsToSell ? 'sell' : 'reuse') : null,
+      status: wantsMarketRoute ? 'marketplace' : 'pending',
+      route: wantsMarketRoute ? (wantsToSell ? 'sell' : 'reuse') : null,
       recyclerConfirmed: false,
       citizenWantsSale: wantsToSell, citizenWantsDonation: wantsToDonate, askingPrice: askingPrice,
-      repaired:false, price: (condition === 'good' && wantsToSell) ? askingPrice : null, sold:false, buyer:null, donationClaimed:false, claimedBy:null,
+      repaired:false, price: (wantsMarketRoute && wantsToSell) ? askingPrice : null, sold:false, buyer:null, donationClaimed:false, claimedBy:null,
       photoDataUrl: photoSource, photoDataUrls: item.photos.slice(), repairPhotoDataUrl: null,
       points, timestamp: Date.now(), collectedAt: null, hasPhoto: !!photoSource,
       classifiedBy, aiConfidence, flaggedHazard, aiNotes, bulky, reportedBy: myUserId || null, isSeed: false
@@ -3784,11 +3794,13 @@ async function markRepaired(id){
   const priceInput = document.getElementById('price-'+id);
   const price = priceInput ? parseInt(priceInput.value, 10) : NaN;
   if(!price || price <= 0){ toast(t('toast_invalid_price')); return; }
+  const prevStatus = r.status;
   r.repaired = true;
   r.price = price;
+  r.status = 'marketplace';
   renderAll();
   const ok = await rpcReportAction('mark_report_repaired', { p_report_id: id, p_price: price });
-  if(!ok){ r.repaired = false; r.price = null; renderAll(); return; }
+  if(!ok){ r.repaired = false; r.price = null; r.status = prevStatus; renderAll(); return; }
   toast(t('toast_repaired_listed'));
 }
 
@@ -4189,7 +4201,15 @@ function renderMarketplace(){
 
 
 function outcomeLine(r){
-  if(r.status === 'marketplace') return r.route === 'sell' ? (t('myreports_sell_listed') + ' $' + (r.price ?? r.askingPrice ?? 0).toLocaleString('en-US') + ' COP') : t('myreports_donation_awaiting');
+  if(r.status === 'marketplace'){
+    if(r.route === 'sell') return t('myreports_sell_listed') + ' $' + (r.price ?? r.askingPrice ?? 0).toLocaleString('en-US') + ' COP';
+    if(r.route === 'repair'){
+      if(!r.repaired) return t('myreports_repair_awaiting');
+      return r.sold ? (t('myreports_repair_sold') + ' ' + escapeHtml(r.buyer) + ' ' + t('myreports_for') + ' $' + (r.price ?? 0).toLocaleString('en-US') + ' COP')
+                    : (t('myreports_repair_listed') + ' $' + (r.price ?? 0).toLocaleString('en-US') + ' COP');
+    }
+    return t('myreports_donation_awaiting');
+  }
   if(r.condition === 'good' && !r.route) return t('myreports_choice_pending');
   if(r.status !== 'collected') return t('myreports_awaiting_collection');
   switch(r.route){
