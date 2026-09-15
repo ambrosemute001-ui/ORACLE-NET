@@ -1751,7 +1751,7 @@ function cpTagList(items){
   const tr = currentLang === 'es' ? (s)=>(CP_ES[s]||s) : (s)=>s;
   return '<div class="cp-tags">' + items.map(i=>`<span class="pill">${escapeHtml(tr(i))}</span>`).join('') + '</div>';
 }
-// Translation lookup for the free-text values inside CRITICAL_POINTS. Most
+// Translation lookup for the free-text values inside CRITICAL_POINTS.Most
 // phrases repeat across the 14 points (waste types, zone conditions, actor
 // categories, intervention types), so a flat dictionary covers the field
 // content without duplicating all 14 records in a second language.
