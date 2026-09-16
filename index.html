@@ -337,6 +337,12 @@ function loadScriptFallback(fallbackSrc){
   #repairCameraOverlay.show{display:flex;}
   #repairCameraClose{position:absolute;top:20px;right:24px;background:none;border:1px solid var(--line);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   #repairCameraClose:hover{border-color:var(--ember);color:var(--ember);}
+
+  #contactDetailsModal{position:fixed;inset:0;background:rgba(10,12,13,0.55);z-index:250;display:none;align-items:center;justify-content:center;padding:24px;}
+  #contactDetailsModal .contact-modal-card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.28);border:1px solid var(--line);}
+  #contactDetailsModal h3{font-family:var(--font-display);margin:0 0 12px;font-size:19px;}
+  #contactDetailsClose{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line);color:var(--ink);width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  #contactDetailsClose:hover{border-color:var(--ember);color:var(--ember);}
   .risk-bar-bg{flex:1;height:8px;background:var(--basalt-2);border-radius:4px;overflow:hidden;display:flex;}
   .risk-bar{height:100%;background:linear-gradient(90deg,var(--sky),var(--ember));}
   .risk-score{width:44px;text-align:right;font-family:var(--font-mono);font-size:12.5px;font-weight:600;color:var(--ink-dim);}
@@ -1101,6 +1107,15 @@ function loadScriptFallback(fallbackSrc){
             <label for="askingPriceInput" style="margin:0 0 6px;">Asking price (COP)</label>
             <input type="text" id="askingPriceInput" placeholder="e.g. 40000">
           </div>
+          <div id="marketContactFields" style="display:none;margin-top:10px;">
+            <p class="small-note" style="margin:0 0 8px;">Buyers/claimers only see these details after they click Claim or Buy (or "View details" on the public site).</p>
+            <label for="marketContactName" style="margin:0 0 6px;">Your name</label>
+            <input type="text" id="marketContactName" placeholder="e.g. Ana María Rodríguez">
+            <label for="marketContactPhone" style="margin:8px 0 6px;">Contact (phone / WhatsApp)</label>
+            <input type="text" id="marketContactPhone" placeholder="e.g. +57 300 123 4567">
+            <label for="marketContactAddress" style="margin:8px 0 6px;">Exact pickup address</label>
+            <input type="text" id="marketContactAddress" placeholder="e.g. Calle 12 #4-56, Usaquén">
+          </div>
         </div>
 
         <div style="margin-top:10px;padding:12px;background:rgba(2,132,199,0.06);border:1px solid var(--line);border-radius:6px;">
@@ -1344,6 +1359,14 @@ function loadScriptFallback(fallbackSrc){
 
 <div class="toast" id="toast"></div>
 
+<div id="contactDetailsModal" onclick="if(event.target===this) closeContactDetailsModal()">
+  <div class="contact-modal-card">
+    <button id="contactDetailsClose" onclick="closeContactDetailsModal()" aria-label="Close">✕</button>
+    <h3>Item &amp; contact details</h3>
+    <div id="contactDetailsBody"></div>
+  </div>
+</div>
+
 <div id="lightboxOverlay" onclick="if(event.target===this) closeLightbox()">
   <button id="lightboxClose" onclick="closeLightbox()" aria-label="Close">✕</button>
   <button id="lightboxPrev" onclick="event.stopPropagation(); stepLightbox(-1)" aria-label="Previous photo" style="display:none;">‹</button>
@@ -1435,6 +1458,15 @@ async function saveReportToBackend(report){
     report.id = data.id;
     report.photoDataUrl = photo_url;
     report.photoDataUrls = uploadedUrls;
+    if(report.marketContactName || report.marketContactPhone || report.marketContactAddress){
+      const { error: contactError } = await sb.from('report_contacts').insert({
+        report_id: data.id,
+        contact_name: report.marketContactName || null,
+        contact_phone: report.marketContactPhone || null,
+        exact_address: report.marketContactAddress || null
+      });
+      if(contactError) console.error('saveReportToBackend: report_contacts', contactError);
+    }
     renderAll();
   } catch(err){
     console.error('saveReportToBackend', err);
@@ -2533,6 +2565,7 @@ en: {
   app_greeting:"110 · Bulky pickup hotline | scheduling a collection",
   toast_desc_missing:"Add a short description first.", toast_locality_missing:"Type your exact location, or pick a locality from the list.", toast_invalid_price:"Enter a valid resale price first.",
   toast_invalid_asking_price:"Enter a valid asking price first.", toast_sale_not_qualified:"Direct sale is not available for this condition",
+  toast_contact_info_missing:"Add your name, contact and pickup address so buyers/claimers can reach you.",
   toast_camera_unavailable:"Camera unavailable. Allow camera access when prompted, or use file upload instead. (Camera access needs the page served over localhost/https | not a plain double-clicked file.)",
   geocoding_note:"🌍 Locating",
   filed_under:"Filed under", for_hotspot_tracking:"for hotspot tracking.",
@@ -2676,6 +2709,7 @@ es: {
   app_greeting:"110 · Línea de recolección de voluminosos | agendando recolección",
   toast_desc_missing:"Agrega primero una breve descripción.", toast_locality_missing:"Escribe tu ubicación exacta, o elige una localidad de la lista.", toast_invalid_price:"Ingresa primero un precio de reventa válido.",
   toast_invalid_asking_price:"Ingresa primero un precio de venta válido.", toast_sale_not_qualified:"La venta directa no está disponible para el estado evaluado de este artículo",
+  toast_contact_info_missing:"Agrega tu nombre, contacto y dirección de recogida para que compradores/reclamantes puedan contactarte.",
   toast_camera_unavailable:"Cámara no disponible. Permite el acceso a la cámara cuando se solicite, o sube un archivo. (El acceso a la cámara requiere que la página se sirva desde localhost/https, no un archivo abierto directamente.)",
   geocoding_note:"🌍 Ubicando",
   filed_under:"Registrado en", for_hotspot_tracking:"para el seguimiento de puntos críticos.",
@@ -3108,8 +3142,37 @@ function renderPublicMarketplace(){
   const ICON_REPAIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>';
   const ICON_SELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
   const ICON_DONATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8c-1.5-3-5-4-5-1.3C7 8 9 8 12 8z"/><path d="M12 8c1.5-3 5-4 5-1.3C17 8 15 8 12 8z"/></svg>';
-  const items = live.slice(0,12).map(r=>({type:r.type,description:r.description||'Marketplace item.',price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0])}));
-  grid.innerHTML = items.map(item=>`<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${escapeHtml(item.type)}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${item.route==='repair'?'Repaired':item.route==='sell'?'Direct sale':'Free donation'}</span><h3>${escapeHtml(item.type)}</h3><p>${escapeHtml(item.description)}</p><strong>${item.route==='reuse' ? 'FREE' : item.route==='sell' ? ('FOR SALE' + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : '')) : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '')}</strong></div></article>`).join('');
+  const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||'Marketplace item.',price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0])}));
+  grid.innerHTML = items.map(item=>`<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${escapeHtml(item.type)}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${item.route==='repair'?'Repaired':item.route==='sell'?'Direct sale':'Free donation'}</span><h3>${escapeHtml(item.type)}</h3><p>${escapeHtml(item.description)}</p><strong>${item.route==='reuse' ? 'FREE' : item.route==='sell' ? ('FOR SALE' + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : '')) : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '')}</strong><button type="button" class="ghost" style="margin-top:10px;width:100%;" onclick="openMarketplaceDetails(${item.id})">View details</button></div></article>`).join('');
+}
+
+async function openMarketplaceDetails(reportId){
+  const modal = document.getElementById('contactDetailsModal');
+  const body = document.getElementById('contactDetailsBody');
+  if(!modal || !body) return;
+  body.innerHTML = '<p class="small-note">Loading…</p>';
+  modal.style.display = 'flex';
+  if(!sb){
+    body.innerHTML = '<p class="small-note">Details are unavailable in local demo mode.</p>';
+    return;
+  }
+  const { data, error } = await sb.rpc('get_marketplace_contact', { p_report_id: reportId });
+  if(error || !data || !data.length){
+    body.innerHTML = '<p class="small-note">No contact details were provided for this listing, or it is no longer available. Try reaching out through Oracle Net\'s WhatsApp channel instead.</p>';
+    return;
+  }
+  const d = data[0];
+  body.innerHTML = `
+    <p style="margin:0 0 10px;">${escapeHtml(d.description || '')}</p>
+    <p style="margin:6px 0;"><b>Location:</b> ${escapeHtml(d.locality || '')}</p>
+    <p style="margin:6px 0;"><b>Contact name:</b> ${escapeHtml(d.contact_name || 'Not provided')}</p>
+    <p style="margin:6px 0;"><b>Phone / WhatsApp:</b> ${escapeHtml(d.contact_phone || 'Not provided')}</p>
+    <p style="margin:6px 0;"><b>Pickup address:</b> ${escapeHtml(d.exact_address || 'Not provided')}</p>
+  `;
+}
+function closeContactDetailsModal(){
+  const modal = document.getElementById('contactDetailsModal');
+  if(modal) modal.style.display = 'none';
 }
 
 function enterPortal(){
@@ -3557,8 +3620,10 @@ renderChannelGreeting();
 
 document.querySelectorAll('input[name="marketChoice"]').forEach(el=>el.addEventListener('change', (e)=>{
   const selling = e.target.value === 'sell' && e.target.checked;
+  const donatingOrSelling = e.target.checked && (e.target.value === 'sell' || e.target.value === 'donate');
   document.getElementById('wantsToSellCheckbox').checked = selling;
   document.getElementById('askingPriceRow').style.display = selling ? 'block' : 'none';
+  document.getElementById('marketContactFields').style.display = donatingOrSelling ? 'block' : 'none';
 }));
 document.getElementById('wantsToSellCheckbox').checked = false;
 
@@ -3601,6 +3666,16 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
   if(wantsToSell){
     askingPrice = parseInt(document.getElementById('askingPriceInput').value, 10);
     if(!askingPrice || askingPrice <= 0){ toast(t('toast_invalid_asking_price')); return; }
+  }
+  let marketContactName = null, marketContactPhone = null, marketContactAddress = null;
+  if(wantsToSell || wantsToDonate){
+    marketContactName = document.getElementById('marketContactName').value.trim();
+    marketContactPhone = document.getElementById('marketContactPhone').value.trim();
+    marketContactAddress = document.getElementById('marketContactAddress').value.trim();
+    if(!marketContactName || !marketContactPhone || !marketContactAddress){
+      toast(t('toast_contact_info_missing'));
+      return;
+    }
   }
 
   const multi = itemsToSubmit.length > 1;
@@ -3667,6 +3742,9 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
       route: wantsMarketRoute ? (wantsToSell ? 'sell' : 'reuse') : null,
       recyclerConfirmed: false,
       citizenWantsSale: wantsToSell, citizenWantsDonation: wantsToDonate, askingPrice: askingPrice,
+      marketContactName: wantsMarketRoute ? marketContactName : null,
+      marketContactPhone: wantsMarketRoute ? marketContactPhone : null,
+      marketContactAddress: wantsMarketRoute ? marketContactAddress : null,
       repaired:false, price: (wantsMarketRoute && wantsToSell) ? askingPrice : null, sold:false, buyer:null, donationClaimed:false, claimedBy:null,
       photoDataUrl: photoSource, photoDataUrls: item.photos.slice(), repairPhotoDataUrl: null,
       points, timestamp: Date.now(), collectedAt: null, hasPhoto: !!photoSource,
@@ -3720,6 +3798,10 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
       document.querySelectorAll('input[name="marketChoice"]').forEach(el=>{ el.checked = false; });
       document.getElementById('askingPriceInput').value = '';
       document.getElementById('askingPriceRow').style.display = 'none';
+      document.getElementById('marketContactName').value = '';
+      document.getElementById('marketContactPhone').value = '';
+      document.getElementById('marketContactAddress').value = '';
+      document.getElementById('marketContactFields').style.display = 'none';
       renderAll();
     }
   }, 400);
@@ -3776,6 +3858,7 @@ async function claimDonation(id){
   const ok = await rpcReportAction('claim_report_donation', { p_report_id: id });
   if(!ok){ r.donationClaimed = false; r.claimedBy = null; renderAll(); return; }
   toast(t('toast_claimed'));
+  openMarketplaceDetails(id);
 }
 async function buyItem(id){
   const r = REPORTS.find(r=>r.id===id);
@@ -3787,6 +3870,7 @@ async function buyItem(id){
   const ok = await rpcReportAction('buy_report_item', { p_report_id: id });
   if(!ok){ r.sold = false; r.buyer = null; renderAll(); return; }
   toast(t('toast_bought'));
+  openMarketplaceDetails(id);
 }
 async function markRepaired(id){
   const r = REPORTS.find(r=>r.id===id);
