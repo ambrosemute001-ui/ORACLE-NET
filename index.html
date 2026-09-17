@@ -1108,7 +1108,7 @@ function loadScriptFallback(fallbackSrc){
             <input type="text" id="askingPriceInput" placeholder="e.g. 40000">
           </div>
           <div id="marketContactFields" style="display:none;margin-top:10px;">
-            <p class="small-note" style="margin:0 0 8px;">Buyers/claimers only see these details after they click Claim or Buy (or "View details" on the public site).</p>
+            <p class="small-note" style="margin:0 0 8px;">Only shown to buyers/claimers after they click Claim, Buy, or View details.</p>
             <label for="marketContactName" style="margin:0 0 6px;">Your name</label>
             <input type="text" id="marketContactName" placeholder="e.g. Ana María Rodríguez">
             <label for="marketContactPhone" style="margin:8px 0 6px;">Contact (phone / WhatsApp)</label>
@@ -2582,6 +2582,8 @@ en: {
   kpi_repair_awaiting:"Awaiting repair", kpi_repair_listed:"Listed for sale", kpi_repair_income:"Income earned (COP, sim.)",
   repairershop_queue_title:"Awaiting repair", repairershop_listed_title:"Your listings",
   btn_claim:"Claim", btn_buy:"Buy", btn_mark_repaired:"Mark repaired & list", label_set_price:"Resale price (COP)", placeholder_price:"e.g. 35000",
+  placeholder_repairer_name:"Your name / shop name", placeholder_repairer_phone:"Contact (phone / WhatsApp)", placeholder_repairer_address:"Pickup address",
+  toast_repairer_contact_missing:"Add your name, contact and pickup address so buyers can reach you.",
   empty_donations:"No donations available right now.", empty_directsale:"No citizen-listed items for sale right now.", empty_forsale:"No repaired items for sale right now.",
   empty_repair_queue:"Nothing waiting for repair right now.", empty_repair_listed:"Nothing listed yet.",
   nav_myreports:"My Reports", myreports_title:"My Reports", myreports_desc:"What happened to everything you've reported.", myreports_choice_pending:"Choose donation or direct sale when you are ready.",
@@ -2726,6 +2728,8 @@ es: {
   kpi_repair_awaiting:"Pendientes de reparar", kpi_repair_listed:"Publicados en venta", kpi_repair_income:"Ingresos generados (COP, sim.)",
   repairershop_queue_title:"Pendientes de reparar", repairershop_listed_title:"Tus publicaciones",
   btn_claim:"Reclamar", btn_buy:"Comprar", btn_mark_repaired:"Marcar reparado y publicar", label_set_price:"Precio de reventa (COP)", placeholder_price:"ej. 35000",
+  placeholder_repairer_name:"Tu nombre / taller", placeholder_repairer_phone:"Contacto (teléfono / WhatsApp)", placeholder_repairer_address:"Dirección de recogida",
+  toast_repairer_contact_missing:"Agrega tu nombre, contacto y dirección de recogida para que los compradores puedan contactarte.",
   empty_donations:"No hay donaciones disponibles por ahora.", empty_directsale:"No hay artículos en venta directa por ahora.", empty_forsale:"No hay objetos reparados en venta por ahora.",
   empty_repair_queue:"Nada pendiente de reparar por ahora.", empty_repair_listed:"Aún no has publicado nada.",
   nav_myreports:"Mis Reportes", myreports_title:"Mis Reportes", myreports_desc:"Qué pasó con todo lo que has reportado.", myreports_choice_pending:"Elige donación o venta directa cuando estés listo.",
@@ -3878,6 +3882,13 @@ async function markRepaired(id){
   const priceInput = document.getElementById('price-'+id);
   const price = priceInput ? parseInt(priceInput.value, 10) : NaN;
   if(!price || price <= 0){ toast(t('toast_invalid_price')); return; }
+  const nameInput = document.getElementById('repairerName-'+id);
+  const phoneInput = document.getElementById('repairerPhone-'+id);
+  const addressInput = document.getElementById('repairerAddress-'+id);
+  const repairerName = nameInput ? nameInput.value.trim() : '';
+  const repairerPhone = phoneInput ? phoneInput.value.trim() : '';
+  const repairerAddress = addressInput ? addressInput.value.trim() : '';
+  if(!repairerName || !repairerPhone || !repairerAddress){ toast(t('toast_repairer_contact_missing')); return; }
   const prevStatus = r.status;
   r.repaired = true;
   r.price = price;
@@ -3885,6 +3896,15 @@ async function markRepaired(id){
   renderAll();
   const ok = await rpcReportAction('mark_report_repaired', { p_report_id: id, p_price: price });
   if(!ok){ r.repaired = false; r.price = null; r.status = prevStatus; renderAll(); return; }
+  if(sb){
+    const { error: contactError } = await sb.from('report_contacts').upsert({
+      report_id: id,
+      contact_name: repairerName,
+      contact_phone: repairerPhone,
+      exact_address: repairerAddress
+    });
+    if(contactError) console.error('markRepaired: report_contacts', contactError);
+  }
   toast(t('toast_repaired_listed'));
 }
 
@@ -4417,8 +4437,8 @@ function renderRepairerPortal(){
     queueEl.innerHTML = `<div class="small-note">${t('empty_repair_queue')}</div>`;
   } else {
     awaitingRepair.forEach(r=>{
-      const row = document.createElement('div');
-      row.className = 'risk-row';
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px;';
       const photoStatus = r.repairPhotoDataUrl
         ? renderRemovableThumb(r.repairPhotoDataUrl, r.type, `removeRepairPhoto(${r.id})`)
         : `<div style="display:flex;gap:6px;">
@@ -4428,12 +4448,17 @@ function renderRepairerPortal(){
                <input type="file" accept="image/*" style="display:none;" onchange="handleRepairPhotoSelected(${r.id}, this)">
              </label>
            </div>`;
-      row.innerHTML = `${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}
+      wrap.innerHTML = `<div class="risk-row" style="border-bottom:none;margin-bottom:8px;">${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}
         <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(r.type)} | ${escapeHtml(r.locality)}</div>
         <input type="text" id="price-${r.id}" placeholder="${t('placeholder_price')}" style="width:110px;padding:6px 8px;font-size:12px;">
         ${photoStatus}
-        <button class="ghost" onclick="markRepaired(${r.id})">${t('btn_mark_repaired')}</button>`;
-      queueEl.appendChild(row);
+        <button class="ghost" onclick="markRepaired(${r.id})">${t('btn_mark_repaired')}</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:2px;">
+          <input type="text" id="repairerName-${r.id}" placeholder="${t('placeholder_repairer_name')}" style="flex:1;min-width:140px;padding:6px 8px;font-size:12px;">
+          <input type="text" id="repairerPhone-${r.id}" placeholder="${t('placeholder_repairer_phone')}" style="flex:1;min-width:140px;padding:6px 8px;font-size:12px;">
+          <input type="text" id="repairerAddress-${r.id}" placeholder="${t('placeholder_repairer_address')}" style="flex:1.4;min-width:160px;padding:6px 8px;font-size:12px;">
+        </div>`;
+      queueEl.appendChild(wrap);
     });
   }
 
