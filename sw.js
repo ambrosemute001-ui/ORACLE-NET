@@ -1,6 +1,6 @@
 // Oracle Net service worker — app-shell caching only.
 // Bump CACHE_NAME on every deploy so old clients pick up the new shell.
-const CACHE_NAME = 'oracle-net-shell-v1';
+const CACHE_NAME = 'oracle-net-shell-v2';
 const SHELL_FILES = [
   './',
   './index.html',
@@ -29,19 +29,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // Only ever handle same-origin GET requests for the app shell itself.
-  // Everything else (Supabase auth/rest/realtime, CDN scripts, images) is
-  // left completely alone — never intercepted, never cached — so data is
-  // always fresh and auth/session behavior is never affected by this worker.
+  // Ignore everything except our own GET requests (Supabase calls, CDN
+  // scripts, etc. pass straight through, uncached).
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) {
     return;
   }
 
-  // Network-first for the HTML shell so a deploy is picked up immediately
-  // when online; falls back to the cached copy when offline.
+  // HTML: always try the network first, fall back to cache if offline.
   if (req.mode === 'navigate' || req.destination === 'document') {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-store' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
@@ -52,7 +49,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for the static shell assets (icons, manifest).
+  // Everything else (icons, manifest): cache first.
   event.respondWith(
     caches.match(req).then((cached) => cached || fetch(req))
   );
