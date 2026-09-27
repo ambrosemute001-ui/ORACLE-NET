@@ -80,7 +80,8 @@ function loadScriptFallback(fallbackSrc){
       radial-gradient(950px 700px at 102% -4%, rgba(2,132,199,0.16), transparent 55%),
       radial-gradient(750px 600px at 96% 60%, rgba(180,83,9,0.06), transparent 60%),
       radial-gradient(1050px 820px at 44% 115%, rgba(23,107,69,0.14), transparent 60%),
-      linear-gradient(180deg, #f8fcf9 0%, #edf5f0 45%, #e7f1ec 100%);
+      linear-gradient(180deg, rgba(248,252,249,.68) 0%, rgba(237,245,240,.62) 45%, rgba(231,241,236,.62) 100%),
+      url('https://images.unsplash.com/photo-1605270160644-d52c6515c141?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center top / cover no-repeat;
     background-attachment:fixed;
     position:relative;
   }
@@ -225,13 +226,22 @@ function loadScriptFallback(fallbackSrc){
   @media(max-width:760px){
     .impact-tile{flex:1 1 45%;border-right:none;border-bottom:1px solid var(--line);}
   }
-  h2.sec-title{font-family:var(--font-display);font-size:22px;color:var(--ink);margin:0;}
-  p.sec-desc{color:var(--ink-dim);font-size:14.5px;font-weight:500;margin:0 0 20px;max-width:640px;line-height:1.5;}
+  h2.sec-title{font-family:var(--font-display);font-size:22px;color:var(--ink);margin:0;text-shadow:0 1px 3px rgba(255,255,255,.6);}
+  p.sec-desc{color:var(--ink-dim);font-size:14.5px;font-weight:500;margin:0 0 20px;max-width:640px;line-height:1.5;text-shadow:0 1px 3px rgba(255,255,255,.6);}
 
   .grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;}
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
   .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
   @media(max-width:820px){.grid2{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} .grid4{grid-template-columns:1fr 1fr;}}
+  @media(max-width:480px){.grid3{grid-template-columns:1fr;} .grid4{grid-template-columns:1fr;} .card.kpi{padding:16px;} .card.kpi .num{font-size:26px;}}
+  @media(max-width:600px){
+    .app{padding:0 16px 60px;}
+    .topbar{padding:12px calc(50vw - 50% + 16px);}
+    .card{padding:14px;}
+    .pub-page-banner{height:150px;padding:16px;}
+    .pub-page-banner h2{font-size:20px;}
+    #contactDetailsModal .contact-modal-card{max-width:92vw;}
+  }
 
   .card{background-color:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow-sm);}
   .card h3{font-family:var(--font-display);font-size:16px;margin:0 0 14px;color:var(--ink);font-weight:600;}
@@ -251,8 +261,8 @@ function loadScriptFallback(fallbackSrc){
     padding:11px 18px;font-family:var(--font-display);font-weight:600;font-size:14px;cursor:pointer;
   }
   button.primary:hover{background:#4ade80;}
-  button.ghost{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font-mono);}
-  button.ghost:hover{color:var(--ink);border-color:var(--ink-dim);}
+  button.ghost, label.ghost{background:rgba(231,240,234,0.55);border:1px solid var(--line);color:var(--ink-dim);border-radius:18px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font-mono);}
+  button.ghost:hover, label.ghost:hover{color:var(--ink);border-color:var(--ink-dim);background:rgba(231,240,234,0.85);}
 
   
   .wa{background:rgba(231,240,234,0.72);border:1px solid var(--line);border-radius:10px;padding:14px;height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
@@ -265,6 +275,10 @@ function loadScriptFallback(fallbackSrc){
   .leaflet-container{background:var(--basalt-2) !important;font-family:var(--font-body);}
 
   table{width:100%;border-collapse:collapse;font-size:13px;}
+  @media(max-width:760px){
+    table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;}
+    table thead, table tbody{display:table;width:100%;table-layout:auto;}
+  }
   th{text-align:left;font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.05em;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--basalt-2);position:sticky;top:0;z-index:1;}
   td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink);}
   tr:last-child td{border-bottom:none;}
@@ -276,7 +290,7 @@ function loadScriptFallback(fallbackSrc){
   .pill.repair{background:var(--amber-dim);color:var(--amber);}
   .pill.sell{background:#f1e9fb;color:#7c3aed;}
   .pill.recycle{background:#e0f2fe;color:var(--sky);}
-  .pill.pyrolysis{background:#fde8dc;color:var(--brick);}
+  .pill.disposal{background:#fde8dc;color:var(--brick);}
 
   .card.kpi{position:relative;overflow:hidden;padding-top:22px;}
   .card.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
@@ -389,13 +403,15 @@ function loadScriptFallback(fallbackSrc){
 
   .gate-auth{
     flex:1 1 58%;min-width:320px;
-    background:var(--basalt);
+    background:
+      linear-gradient(180deg, rgba(243,247,244,.42) 0%, rgba(243,247,244,.58) 100%),
+      url('https://images.unsplash.com/photo-1773847469674-189153e5e32d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center 40% / cover no-repeat;
     display:flex;align-items:flex-start;justify-content:center;
     padding:44px 28px;overflow-y:auto;
   }
   .auth-inner{max-width:440px;width:100%;margin:auto 0;}
-  .auth-inner h2{font-family:var(--font-display);font-size:25px;color:var(--ink);margin:0 0 6px;}
-  .auth-inner p.gate-sub{color:var(--ink-dim);font-size:14px;font-weight:500;margin:0 0 20px;}
+  .auth-inner h2{font-family:var(--font-display);font-size:25px;color:var(--ink);margin:0 0 6px;text-shadow:0 1px 4px rgba(255,255,255,.6);}
+  .auth-inner p.gate-sub{color:var(--ink-dim);font-size:14px;font-weight:500;margin:0 0 20px;text-shadow:0 1px 3px rgba(255,255,255,.6);}
 
   @media(max-width:860px){
     #roleGate{flex-direction:column;overflow-y:auto;}
@@ -427,11 +443,12 @@ function loadScriptFallback(fallbackSrc){
 
   
   .gate-back-btn{
-    display:inline-flex;align-items:center;gap:6px;background:none;border:none;
-    color:var(--ink-dim);font-family:var(--font-mono);font-size:12px;cursor:pointer;
-    padding:0;margin-bottom:16px;
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.75);border:1px solid var(--line);color:var(--ink-dim);
+    font-family:var(--font-mono);font-size:12px;font-weight:600;cursor:pointer;
+    padding:8px 14px;border-radius:20px;margin-bottom:16px;
   }
-  .gate-back-btn:hover{color:var(--ember);}
+  .gate-back-btn:hover{color:var(--ember);border-color:var(--ember);}
   .gate-role-badge{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
   .gate-role-badge .who-icon{width:44px;height:44px;font-size:20px;}
   .role-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 16px;cursor:pointer;text-align:left;transition:border-color .15s, transform .15s;}
@@ -513,6 +530,12 @@ function loadScriptFallback(fallbackSrc){
   @keyframes tickerFade{from{opacity:0;transform:translateY(3px);} to{opacity:1;transform:translateY(0);}}
 
   .pub-page{display:none;padding:50px 40px 70px;max-width:1140px;margin:0 auto;}
+  #pub-contact{
+    max-width:none;margin:0;padding-left:0;padding-right:0;
+    background:
+      linear-gradient(180deg, rgba(243,247,244,.88) 0%, rgba(243,247,244,.94) 100%),
+      url('https://images.unsplash.com/photo-1758598497049-da3b63569529?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center 30% / cover no-repeat;
+  }
   .pub-page.active{display:block;}
   .pub-page h2{font-family:var(--font-display);font-size:26px;color:var(--ink);margin:0 0 10px;}
   .pub-page p.pub-lead{color:var(--ink-dim);font-size:15px;font-weight:500;line-height:1.6;max-width:680px;margin:0 0 30px;}
@@ -606,7 +629,13 @@ function loadScriptFallback(fallbackSrc){
   .home-section{padding-top:76px;padding-bottom:76px;}
   .home-intro{border-bottom:1px solid var(--line);}
   .home-process-grid article{background:#fff;border-color:#dce9e2;box-shadow:0 8px 24px rgba(22,83,55,.055);transition:transform .18s,box-shadow .18s;}.home-process-grid article:hover{transform:translateY(-4px);box-shadow:0 15px 30px rgba(22,83,55,.09);}
+  .home-process-grid article{background-size:cover;background-position:center;}
+  .home-process-grid article:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
+  .home-process-grid article:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
+  .home-process-grid article:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
+  .home-process-grid article:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
   .home-process-grid article>span{color:#14764d;}
+  .home-process-grid h3, .home-process-grid p{text-shadow:0 1px 3px rgba(255,255,255,.55);}
   .process-icon{width:50px;height:50px;border-radius:15px;background:#e7f5ed;display:flex;align-items:center;justify-content:center;font-size:26px;color:#14764d;}
   .process-icon svg{width:24px;height:24px;}
   .person-avatar svg{width:20px;height:20px;color:#14764d;}
@@ -616,6 +645,165 @@ function loadScriptFallback(fallbackSrc){
   @media(max-width:620px){.home-stat-strip{margin:0 20px;}.home-stat-strip div{padding:16px;}.home-hero{padding:42px 20px;}.home-hero-visual{min-height:350px;margin-top:10px;}.hero-panel{width:min(350px,86vw);}.hero-float-one{right:-2px;}.hero-float-two{left:4px;bottom:-20px;}.home-market-callout{margin:0 20px 50px;padding:27px 22px;display:block;}.home-market-callout .primary{margin-top:20px;}.home-market-callout h2{font-size:27px;}}
   .who-card p{margin:7px 0 0;color:var(--ink-dim);font-size:12px;line-height:1.45;max-width:230px;}
   .who-card h4{margin-bottom:0;}
+
+  /* ---- Photography pass: hero + a few contextual section moments ---- */
+  .home-hero{
+    background:
+      linear-gradient(100deg, rgba(9,26,19,0.72) 0%, rgba(9,28,20,0.52) 34%, rgba(9,28,20,0.22) 58%, rgba(9,28,20,0.08) 78%, rgba(9,28,20,0.1) 100%),
+      url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') center 42% / cover no-repeat;
+  }
+  .home-hero::before{opacity:.22;mix-blend-mode:overlay;}
+  .home-hero h1{color:#fff;}
+  .home-hero h1 span{color:#86efac;}
+  .home-hero p{color:rgba(255,255,255,.82);}
+  .home-hero .eyebrow{color:#86efac;}
+  .home-secondary{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:28px;padding:12px 18px;font-weight:600;}
+  .home-secondary:hover{background:rgba(255,255,255,.12);}
+  .home-proof-row{border-top:1px solid rgba(255,255,255,.25);}
+  .home-proof-row b{color:#86efac;}
+  .home-proof-row span{color:rgba(255,255,255,.78);}
+  .home-brand-mark{background:rgba(255,255,255,.95);}
+
+  .home-testimonials{
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(8,20,15,0.55) 0%, rgba(12,45,30,0.62) 78%, rgba(15,111,71,0.72) 100%),
+      url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') center 30% / cover no-repeat;
+    max-width:none;padding:78px 40px 100px;border-radius:0;
+  }
+  .home-testimonials .section-kicker{color:#86efac;}
+  .home-testimonials h2{color:#fff;}
+  .home-testimonials .home-people-grid{max-width:1200px;margin:0 auto;}
+  .home-testimonials .home-person{border-top:1px solid rgba(255,255,255,.2);}
+  .home-testimonials .person-avatar{background:rgba(255,255,255,.12);}
+  .home-testimonials .person-avatar svg{color:#86efac;}
+  .home-testimonials .home-person b{color:#fff;}
+  .home-testimonials .home-person p{color:rgba(255,255,255,.72);}
+
+  .pub-page-banner{
+    position:relative;height:220px;border-radius:22px;overflow:hidden;margin-bottom:36px;
+    display:flex;align-items:flex-end;padding:26px 30px;
+  }
+  .pub-page-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg, rgba(8,22,16,.86) 0%, rgba(8,22,16,.25) 65%, rgba(8,22,16,.05) 100%);}
+  .pub-page-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+  .pub-page-banner span{position:relative;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:#86efac;text-transform:uppercase;}
+  .pub-page-banner h2{position:relative;color:#fff;font-family:var(--font-display);font-size:30px;margin:6px 0 0;}
+  @media(max-width:620px){.home-testimonials{padding:55px 20px;}.pub-page-banner{height:170px;padding:20px;}.pub-page-banner h2{font-size:23px;}}
+
+  /* ---- Dashboard KPI cards: contextual photo background, kept legible ---- */
+  .card.kpi{position:relative;overflow:hidden;border-color:rgba(255,255,255,.12);}
+  .card.kpi .num{position:relative;z-index:1;}
+  .card.kpi .label{position:relative;z-index:1;}
+  /* Any card.kpi that gets a themed photo flips to light-on-dark text, with a
+     small translucent chip behind the text so legibility never depends on how
+     bright that particular patch of photo happens to be. Photo + scrim are one
+     "background" shorthand directly on the card (no pseudo-elements) so the
+     card's own opaque background-color can never paint over/hide the photo. */
+  #tab-circular .card.kpi, #tab-recycler .card.kpi, #tab-repairershop .card.kpi,
+  #tab-dashboard .kpi-zone-city .card.kpi, #tab-dashboard .kpi-zone-market .card.kpi{
+    border-color:rgba(255,255,255,.14);
+    background-size:cover;background-repeat:no-repeat;
+  }
+  #tab-circular .card.kpi .num, #tab-recycler .card.kpi .num, #tab-repairershop .card.kpi .num,
+  #tab-dashboard .kpi-zone-city .card.kpi .num, #tab-dashboard .kpi-zone-market .card.kpi .num{
+    color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.7);
+    background:rgba(5,14,10,.55);padding:3px 9px;border-radius:7px;display:inline-block;
+    backdrop-filter:blur(2px);
+  }
+  #tab-circular .card.kpi .label, #tab-recycler .card.kpi .label, #tab-repairershop .card.kpi .label,
+  #tab-dashboard .kpi-zone-city .card.kpi .label, #tab-dashboard .kpi-zone-market .card.kpi .label{
+    color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);
+    background:rgba(5,14,10,.55);padding:3px 9px;border-radius:6px;display:inline-block;margin-top:6px;
+    backdrop-filter:blur(2px);
+  }
+  #tab-circular .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
+  #kpiDonationsClaimedCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
+  #kpiItemsResoldCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 30%;}
+  #kpiItemsSoldDirectCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
+  #kpiEnergyCard.card.kpi, #kpiDisposalShareCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1770068511850-50f9bd0ad5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
+  #kpiAshCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1510251197878-a2e6d2cb590c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
+  #tab-recycler .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 35%;}
+  #tab-recycler .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
+  #tab-repairershop .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 30%;}
+  #tab-repairershop .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
+  #tab-dashboard .kpi-zone-city .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1645156568844-13cc8b4b1cf7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
+  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
+  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
+  #tab-dashboard .kpi-zone-market .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 35%;}
+  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
+  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
+
+
+
+  /* ---- Light photo-wash for content/list/table cards that were plain white ---- */
+  #opsQueueCard, #riskListCard, #topHotspotsCard, #criticalPointsCard,
+  #circularBreakdownCard, #recyclerTableCard, #repairQueueList, #repairListedList,
+  #usersListCard, #timeChartCard, #localityChartCard, #responseLocalityChartCard,
+  #outcomeTypeChartCard, #diversionTrendChartCard, #reportersTrendChartCard,
+  #repairWorkloadChartCard, #recycleWorkloadChartCard, #aqiCard,
+  #directSaleList, #forSaleList, #leaderboardCard, #donationsList, #myReportsList,
+  #newReportCard, #reportSimulatorCard, #hazardByTypeCard{
+    background-blend-mode:normal;
+    background-size:cover;
+    background-position:center;
+  }
+  #opsQueueCard, #hazardByTypeCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1762805543693-5aaa00fadc28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #riskListCard, #topHotspotsCard, #criticalPointsCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #circularBreakdownCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #recyclerTableCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #repairQueueList, #repairListedList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #usersListCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  /* Table rows in photo-backed cards need their own solid backing, since
+     header cells already get one but body cells never did. */
+  #opsQueueCard tbody tr td, #recyclerTableCard tbody tr td, #usersListCard tbody tr td{
+    background:rgba(255,255,255,.86);
+  }
+  #opsQueueCard tbody tr:hover td, #recyclerTableCard tbody tr:hover td, #usersListCard tbody tr:hover td{
+    background:rgba(255,255,255,.96);
+  }
+  /* Same idea for the row-based lists (marketplace, hotspots, repair queue):
+     each row gets its own backing strip instead of relying on the card's
+     overall wash, which isn't always strong enough once the photo underneath
+     has a lot going on in it. */
+  #donationsList .risk-row, #directSaleList .risk-row, #forSaleList .risk-row,
+  #riskListCard .risk-row, #topHotspotsCard .risk-row, #criticalPointsCard .risk-row,
+  #repairQueueList .risk-row, #repairListedList .risk-row,
+  #localityChartCard .risk-row, #responseLocalityChartCard .risk-row, #outcomeTypeChartCard .risk-row,
+  #hazardByTypeCard .risk-row, #repairWorkloadChartCard .risk-row, #recycleWorkloadChartCard .risk-row{
+    background:rgba(255,255,255,.82);border-radius:8px;padding:9px 10px;margin-bottom:4px;border-bottom:none;
+  }
+  #donationsList button.ghost, #directSaleList button.ghost, #forSaleList button.ghost{
+    background:rgba(255,255,255,.9);
+  }
+  #timeChartCard, #localityChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1524813686514-a57563d77965?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #responseLocalityChartCard, #outcomeTypeChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #diversionTrendChartCard, #reportersTrendChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #repairWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #recycleWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #aqiCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #directSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #forSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1544691560-fc2053d97726?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #leaderboardCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #donationsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1786719664235-78cb91943275?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #myReportsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1625669981647-dc396c990a6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #newReportCard, #reportSimulatorCard{background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+
+  /* Text on top of the light-wash cards above needs a bit more weight than
+     it does on plain white, since it's competing with a photo underneath. */
+  #opsQueueCard .risk-score, #riskListCard .risk-score, #topHotspotsCard .risk-score,
+  #criticalPointsCard .risk-score, #circularBreakdownCard .risk-score, #recyclerTableCard .risk-score,
+  #timeChartCard .risk-score, #localityChartCard .risk-score, #responseLocalityChartCard .risk-score,
+  #outcomeTypeChartCard .risk-score, #hazardByTypeCard .risk-score,
+  #repairWorkloadChartCard .risk-score, #recycleWorkloadChartCard .risk-score{
+    color:var(--ink);
+  }
+  #opsQueueCard .risk-bar-bg, #riskListCard .risk-bar-bg, #topHotspotsCard .risk-bar-bg,
+  #criticalPointsCard .risk-bar-bg, #circularBreakdownCard .risk-bar-bg, #recyclerTableCard .risk-bar-bg,
+  #timeChartCard .risk-bar-bg, #localityChartCard .risk-bar-bg, #responseLocalityChartCard .risk-bar-bg,
+  #outcomeTypeChartCard .risk-bar-bg, #hazardByTypeCard .risk-bar-bg,
+  #repairWorkloadChartCard .risk-bar-bg, #recycleWorkloadChartCard .risk-bar-bg{
+    background:rgba(255,255,255,.78);
+  }
 
 </style>
 </head>
@@ -712,7 +900,10 @@ function loadScriptFallback(fallbackSrc){
 
   <section class="pub-page" id="pub-about">
     <div class="app" style="padding-top:44px;">
-      <h2>About Oracle Net</h2>
+      <div class="pub-page-banner">
+        <img src="https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <div><span>ABOUT ORACLE NET</span><h2>A network built around people.</h2></div>
+      </div>
       <p class="pub-lead">Oracle Net is a community-driven circular waste platform. It connects citizens who have unwanted items with a marketplace and recovery network, while keeping municipal control focused on the streams that actually need intervention.</p>
       <div class="role-explain-card" style="margin-bottom:22px;background:#eef6f0;">
         <h4>🧭 Built as a pilot toward Volumi</h4>
@@ -729,7 +920,10 @@ function loadScriptFallback(fallbackSrc){
 
   <section class="pub-page" id="pub-events">
     <div class="app" style="padding-top:44px;">
-      <h2>Events</h2>
+      <div class="pub-page-banner">
+        <img src="https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <div><span>EVENTS</span><h2>See the network in action.</h2></div>
+      </div>
       <p class="pub-lead">Community and program activities around Oracle Net.</p>
       <div class="grid3">
         <div class="event-card"><span class="event-date">Community</span><h4>Neighbourhood reporting drive</h4><p>Residents learn how to report bulky waste with a photo and location.</p></div>
@@ -742,7 +936,10 @@ function loadScriptFallback(fallbackSrc){
 
   <section class="pub-page" id="pub-marketplace">
     <div class="app" style="padding-top:44px;">
-      <div class="section-heading"><span class="section-kicker">ORACLE NET MARKETPLACE</span><h2>Give good items another owner.</h2></div>
+      <div class="pub-page-banner">
+        <img src="https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <div><span>ORACLE NET MARKETPLACE</span><h2>Give good items another owner.</h2></div>
+      </div>
       <p class="pub-lead">Free donations and citizen-direct sales are published here without waiting for municipal approval. Repaired items appear after a repairer completes the assigned job.</p>
       <div id="publicMarketplaceGrid" class="public-market-grid"></div>
     </div>
@@ -750,9 +947,11 @@ function loadScriptFallback(fallbackSrc){
 
   <section class="pub-page" id="pub-donate">
     <div class="app" style="padding-top:44px;">
+      <div class="pub-page-banner">
+        <img src="https://images.unsplash.com/photo-1758599668299-beebedfabf7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <div><span>DONATE</span><h2>Have an item someone else could use?</h2></div>
+      </div>
       <div class="donate-hero">
-        
-        <span class="section-kicker">DONATE</span><h2>Have an item someone else could use?</h2>
         <p>Choose <b>Donate freely</b> when reporting it. If the AI confirms that it is suitable for reuse, Oracle Net places it directly on the public marketplace no municipal collection-queue approval required.</p>
         <button class="primary" onclick="enterPortal()">Start a donation →</button>
       </div>
@@ -761,7 +960,10 @@ function loadScriptFallback(fallbackSrc){
 
   <section class="pub-page" id="pub-contact">
     <div class="app" style="padding-top:44px;">
-      <h2>Contact Us</h2>
+      <div class="pub-page-banner">
+        <img src="https://images.unsplash.com/photo-1758691736821-f1a600c0c3f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <div><span>CONTACT US</span><h2>Let's talk.</h2></div>
+      </div>
       <p class="pub-lead">Questions, partnerships, events or support contact the Oracle Net team.</p>
       <div class="contact-grid">
         <div>
@@ -1071,7 +1273,7 @@ function loadScriptFallback(fallbackSrc){
     <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="13.5"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/></svg></span><h2 class="sec-title" data-i18n="report_title">Citizen Reporting</h2></div>
     <p class="sec-desc" data-i18n="report_desc">AI classifies your item and awards Impact Points instantly.</p>
     <div class="grid2">
-      <div class="card">
+      <div class="card" id="newReportCard">
         <h3 data-i18n="report_new_title">New report</h3>
 
         <label data-i18n="channel_label">Reporting channel</label>
@@ -1125,7 +1327,7 @@ function loadScriptFallback(fallbackSrc){
 
         <button class="primary" id="submitReport" data-i18n="btn_send_report">Send report</button>
       </div>
-      <div class="card">
+      <div class="card" id="reportSimulatorCard">
         <h3 data-i18n="report_channel_title">Reporting channel simulator</h3>
         <div class="wa" id="waWindow"></div>
       </div>
@@ -1142,7 +1344,7 @@ function loadScriptFallback(fallbackSrc){
     
     <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 2.5V16h-7"/><circle cx="6" cy="18.2" r="1.5"/><circle cx="17" cy="18.2" r="1.5"/></svg></span><h2 class="sec-title" data-i18n="ops_title">Assignment Queue</h2></div>
     <p class="sec-desc" data-i18n="ops_desc">Assign only items that need repair, recycling or authorized final disposal.</p>
-    <div class="card">
+    <div class="card" id="opsQueueCard">
       <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:12px;cursor:pointer;">
         <input type="checkbox" id="opsBulkyOnly" onchange="renderOps()" style="width:auto;"> <span data-i18n="ops_bulky_filter">Show bulky items only (need a dedicated pickup route)</span>
       </label>
@@ -1167,15 +1369,15 @@ function loadScriptFallback(fallbackSrc){
       <div class="toggle" id="factor-rain" data-i18n="factor_rain">🌧 Rainy season</div>
     </div>
     <div class="grid2">
-      <div class="card">
+      <div class="card" id="riskListCard">
         <h3 data-i18n="risk_list_title">Predicted risk by locality</h3>
         <div id="riskList"></div>
       </div>
-      <div class="card">
+      <div class="card" id="topHotspotsCard">
         <h3 data-i18n="top_hotspots_title">Top predicted hotspots (next 14 days)</h3>
         <div id="topHotspots"></div>
       </div>
-      <div class="card" style="grid-column:1 / -1;">
+      <div class="card" id="criticalPointsCard" style="grid-column:1 / -1;">
         <h3 data-i18n="critical_points_title">Known Critical Points</h3>
         <p class="small-note" style="margin:0 0 10px;" data-i18n="critical_points_desc">The 14 points UAESP has field surveyed. Click a point to see the full record.</p>
         <div id="criticalPointsList"></div>
@@ -1195,17 +1397,17 @@ function loadScriptFallback(fallbackSrc){
       <div class="flow-step"><h4 data-i18n="flow_residual_title">Residual</h4><p data-i18n="flow_residual_desc">Non-recoverable → Doña Juana Sanitary Landfill (final disposal).</p></div>
     </div>
     <div class="grid4">
-      <div class="card kpi"><span class="num" id="kpiDiversion">0%</span><span class="label" data-i18n="kpi_diversion">Landfill diversion</span></div>
-      <div class="card kpi"><span class="num" id="kpiDonationsClaimed">0</span><span class="label" data-i18n="kpi_donations_claimed">Donations claimed</span></div>
-      <div class="card kpi"><span class="num" id="kpiItemsResold">0</span><span class="label" data-i18n="kpi_items_resold">Items resold via repair</span></div>
-      <div class="card kpi"><span class="num" id="kpiItemsSoldDirect">0</span><span class="label" data-i18n="kpi_items_sold_direct">Sold directly by citizens</span></div>
+      <div class="card kpi" id="kpiDiversionCard"><span class="num" id="kpiDiversion">0%</span><span class="label" data-i18n="kpi_diversion">Landfill diversion</span></div>
+      <div class="card kpi" id="kpiDonationsClaimedCard"><span class="num" id="kpiDonationsClaimed">0</span><span class="label" data-i18n="kpi_donations_claimed">Donations claimed</span></div>
+      <div class="card kpi" id="kpiItemsResoldCard"><span class="num" id="kpiItemsResold">0</span><span class="label" data-i18n="kpi_items_resold">Items resold via repair</span></div>
+      <div class="card kpi" id="kpiItemsSoldDirectCard"><span class="num" id="kpiItemsSoldDirect">0</span><span class="label" data-i18n="kpi_items_sold_direct">Sold directly by citizens</span></div>
     </div>
     <div class="grid3" style="margin-top:16px;">
-      <div class="card kpi"><span class="num" id="kpiEnergy">0</span><span class="label" data-i18n="kpi_energy">Items sent to final disposal</span></div>
-      <div class="card kpi"><span class="num" id="kpiAsh">0%</span><span class="label" data-i18n="kpi_ash">Items with no other recovery path</span></div>
-      <div class="card kpi"><span class="num" id="kpiPyrolysisShare">0%</span><span class="label" data-i18n="kpi_pyrolysis_share">Share sent to final disposal (last resort)</span></div>
+      <div class="card kpi" id="kpiEnergyCard"><span class="num" id="kpiEnergy">0</span><span class="label" data-i18n="kpi_energy">Items sent to final disposal</span></div>
+      <div class="card kpi" id="kpiAshCard"><span class="num" id="kpiAsh">0%</span><span class="label" data-i18n="kpi_ash">Items with no other recovery path</span></div>
+      <div class="card kpi" id="kpiDisposalShareCard"><span class="num" id="kpiDisposalShare">0%</span><span class="label" data-i18n="kpi_disposal_share">Share sent to final disposal (last resort)</span></div>
     </div>
-    <div class="card" style="margin-top:16px;">
+    <div class="card" id="circularBreakdownCard" style="margin-top:16px;">
       <h3 data-i18n="circular_breakdown_title">Recovery path breakdown</h3>
       <div id="circularChart"></div>
     </div>
@@ -1220,12 +1422,12 @@ function loadScriptFallback(fallbackSrc){
       <button class="ghost" onclick="exportReports('csv')" data-i18n="btn_export_csv">⬇ Export CSV</button>
       <button class="ghost" onclick="exportReports('json')" data-i18n="btn_export_json">⬇ Export JSON</button>
     </div>
-    <div class="grid3" style="margin-bottom:16px;">
+    <div class="grid3 kpi-zone-city" style="margin-bottom:16px;">
       <div class="card kpi"><span class="num" id="kpiTotal">0</span><span class="label" data-i18n="kpi_total">Total reports</span></div>
       <div class="card kpi"><span class="num" id="kpiCollected">0</span><span class="label" data-i18n="kpi_collected">Collected</span></div>
       <div class="card kpi"><span class="num" id="kpiPending">0</span><span class="label" data-i18n="kpi_pending">Pending</span></div>
     </div>
-    <div class="grid3" style="margin-bottom:24px;">
+    <div class="grid3 kpi-zone-city" style="margin-bottom:24px;">
       <div class="card kpi"><span class="num" id="kpiPoints">0</span><span class="label" data-i18n="kpi_points">Impact points awarded</span></div>
       <div class="card kpi"><span class="num" id="kpiResponse">-</span><span class="label" data-i18n="kpi_response">Avg. response time (sim.)</span></div>
       <div class="card kpi"><span class="num" id="kpiRecyclerIncome">$0</span><span class="label" data-i18n="kpi_recycler_income">Recycler income generated (COP, sim.)</span></div>
@@ -1234,18 +1436,63 @@ function loadScriptFallback(fallbackSrc){
     <div class="card" style="margin-bottom:24px;background:rgba(2,132,199,0.05);">
       <h3 data-i18n="city_context_title" style="margin:0 0 4px;">Bogotá citywide context (UAESP, 2025-2026)</h3>
       <p class="small-note" data-i18n="city_context_note" style="margin:0 0 12px;">Reference figures reported by UAESP to the Bogotá City Council (Proposition 63 of 2026), shown for context - not this platform's live data.</p>
-      <div class="grid3">
+      <div class="grid3 kpi-zone-city">
         <div class="card kpi"><span class="num">20,227 t</span><span class="label" data-i18n="city_ctx_special_waste">Special waste collected in 2025 (bulky + C&D)</span></div>
         <div class="card kpi"><span class="num">478</span><span class="label" data-i18n="city_ctx_critical_points">Critical illegal-dumping points, end of 2025 (down from 623)</span></div>
         <div class="card kpi"><span class="num">+73.8%</span><span class="label" data-i18n="city_ctx_yoy">Bulky-waste volume, Jan-May 2026 vs. Jan-May 2025</span></div>
       </div>
     </div>
-    <div class="card kpi" style="margin-bottom:24px;"><span class="num" id="kpiBulkyPending">0</span><span class="label" data-i18n="kpi_bulky_pending">Bulky items awaiting special pickup (need a dedicated route, not curbside)</span></div>
+    <div class="card kpi kpi-zone-city" style="margin-bottom:24px;"><span class="num" id="kpiBulkyPending">0</span><span class="label" data-i18n="kpi_bulky_pending">Bulky items awaiting special pickup (need a dedicated route, not curbside)</span></div>
     <div class="grid2">
-      <div class="card"><h3 data-i18n="chart_time_title">Reports over time</h3><div id="timeChart"></div></div>
-      <div class="card"><h3 data-i18n="chart_locality_title">Reports by locality</h3><div id="localityChart"></div></div>
+      <div class="card" id="timeChartCard"><h3 data-i18n="chart_time_title">Reports over time</h3><div id="timeChart"></div></div>
+      <div class="card" id="localityChartCard"><h3 data-i18n="chart_locality_title">Reports by locality</h3><div id="localityChart"></div></div>
     </div>
     <div class="card" style="margin-top:16px;">
+      <h3 data-i18n="insights_title">Marketplace &amp; program performance</h3>
+      <p class="sec-desc" style="margin-bottom:14px;" data-i18n="insights_desc">Live conversion, value, and classification-quality metrics. Updates automatically as reports change.</p>
+      <div class="grid3 kpi-zone-market">
+        <div class="card kpi"><span class="num" id="kpiDonationClaimRate">0%</span><span class="label" data-i18n="kpi_donation_claim_rate">Donations claimed (of those listed)</span></div>
+        <div class="card kpi"><span class="num" id="kpiDirectSaleRate">0%</span><span class="label" data-i18n="kpi_direct_sale_rate">Direct-sale items sold (of those listed)</span></div>
+        <div class="card kpi"><span class="num" id="kpiAiConfidence">-</span><span class="label" data-i18n="kpi_ai_confidence">Avg. AI classification confidence</span></div>
+      </div>
+      <div class="grid3 kpi-zone-market" style="margin-top:16px;">
+        <div class="card kpi"><span class="num" id="kpiRepairValue">$0</span><span class="label" data-i18n="kpi_repair_value">Value generated via repair resale (COP)</span></div>
+        <div class="card kpi"><span class="num" id="kpiDirectSaleValue">$0</span><span class="label" data-i18n="kpi_direct_sale_value">Value generated via direct sale (COP)</span></div>
+        <div class="card kpi"><span class="num" id="kpiHazardRate">0%</span><span class="label" data-i18n="kpi_hazard_rate">Reports flagged hazardous</span></div>
+      </div>
+      <div class="card" id="hazardByTypeCard" style="margin-top:16px;">
+        <h3 data-i18n="chart_hazard_type_title">Hazard flags by item type</h3>
+        <p class="sec-desc" style="margin-bottom:14px;" data-i18n="chart_hazard_type_desc">Where to focus safe-handling guidance for collection crews.</p>
+        <div id="hazardByTypeChart"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h3 data-i18n="pricing_title">Pricing &amp; classification trust</h3>
+      <p class="sec-desc" style="margin-bottom:14px;" data-i18n="pricing_desc">Are citizens pricing realistically, and how often does the AI need correcting?</p>
+      <div class="grid3 kpi-zone-market">
+        <div class="card kpi"><span class="num" id="kpiAvgAskingPrice">$0</span><span class="label" data-i18n="kpi_avg_asking_price">Avg. citizen asking price (COP)</span></div>
+        <div class="card kpi"><span class="num" id="kpiAvgSalePrice">$0</span><span class="label" data-i18n="kpi_avg_sale_price">Avg. actual sale price (COP)</span></div>
+        <div class="card kpi"><span class="num" id="kpiAdminOverrideRate">0%</span><span class="label" data-i18n="kpi_admin_override_rate">AI classifications later corrected by admin</span></div>
+      </div>
+      <div class="grid3 kpi-zone-market" style="margin-top:16px;">
+        <div class="card kpi"><span class="num" id="kpiAvgTimeToClaim">-</span><span class="label" data-i18n="kpi_avg_time_to_claim">Avg. time to claim a donation</span></div>
+        <div class="card kpi"><span class="num" id="kpiAvgTimeToSale">-</span><span class="label" data-i18n="kpi_avg_time_to_sale">Avg. time to sell a listed item</span></div>
+        <div class="card kpi"><span class="num" id="kpiTopCitizenShare">0%</span><span class="label" data-i18n="kpi_top_citizen_share">Share of activity from top 5 citizens</span></div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card" id="responseLocalityChartCard"><h3 data-i18n="chart_response_locality_title">Avg. response time by locality (days)</h3><div id="responseLocalityChart"></div></div>
+      <div class="card" id="outcomeTypeChartCard"><h3 data-i18n="chart_outcome_type_title">Outcome by item type</h3><div id="outcomeTypeChart"></div></div>
+    </div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card" id="diversionTrendChartCard"><h3 data-i18n="chart_diversion_trend_title">Landfill diversion trend (weekly)</h3><div id="diversionTrendChart"></div></div>
+      <div class="card" id="reportersTrendChartCard"><h3 data-i18n="chart_reporters_trend_title">New vs. returning citizens (weekly)</h3><div id="reportersTrendChart"></div></div>
+    </div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card" id="repairWorkloadChartCard"><h3 data-i18n="chart_repair_workload_title">Items repaired, by repairer</h3><div id="repairWorkloadChart"></div></div>
+      <div class="card" id="recycleWorkloadChartCard"><h3 data-i18n="chart_recycle_workload_title">Pickups confirmed, by recycler</h3><div id="recycleWorkloadChart"></div></div>
+    </div>
+    <div class="card" id="aqiCard" style="margin-top:16px;">
       <h3 data-i18n="aqi_title">Air quality index by locality (simulated)</h3>
       <p class="sec-desc" style="margin-bottom:14px;" data-i18n="aqi_desc">Rises with unresolved waste buildup and burning risk.</p>
       <div id="aqiList"></div>
@@ -1274,7 +1521,7 @@ function loadScriptFallback(fallbackSrc){
         <button class="primary" onclick="adminInviteUser()" data-i18n="btn_invite_user">Create account</button>
         <div class="small-note" id="userActionNote" style="margin-top:10px;"></div>
       </div>
-      <div class="card">
+      <div class="card" id="usersListCard">
         <h3 data-i18n="users_list_title">Existing users</h3>
         <div style="max-height:400px;overflow-y:auto;">
           <table>
@@ -1304,7 +1551,7 @@ function loadScriptFallback(fallbackSrc){
       <div class="card kpi"><span class="num" id="kpiRecyclerConfirmed">0</span><span class="label" data-i18n="kpi_confirmed">Confirmed this month</span></div>
       <div class="card kpi"><span class="num" id="kpiRecyclerEarnings">$0</span><span class="label" data-i18n="kpi_earnings">Income earned (COP, sim.)</span></div>
     </div>
-    <div class="card">
+    <div class="card" id="recyclerTableCard">
       <table>
         <thead><tr><th data-i18n="th_id">ID</th><th data-i18n="th_locality">Locality</th><th data-i18n="th_material">Material</th><th data-i18n="th_condition">Condition</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
         <tbody id="recyclerTable"></tbody>
@@ -1417,6 +1664,14 @@ async function loadReportsFromBackend(retryCount){
     return null;
   }
   return data.map(mapBackendRow);
+}
+async function refreshReportsFromBackend(){
+  const rows = await loadReportsFromBackend();
+  if(rows){
+    REPORTS = rows;
+    renderAll();
+    renderPublicMarketplace();
+  }
 }
 async function uploadPhotoToBackend(dataUrl, prefix){
   if(!sb || !dataUrl || !dataUrl.startsWith('data:')) return dataUrl || null;
@@ -2125,6 +2380,7 @@ const CITIZENS = ["Camila R.","Andrés G.","Valentina P.","Julián M.","Daniela 
 let currentCitizenName = "You"; // set at login from the name field; default matches the "You" label
 let myUserId = null; // the logged-in Supabase auth user's id, used to recognize our own reports in the Realtime feed
 let pendingLoginRole = null; // holds the role while the name-safety-net modal is up, then setRole() runs once a name is saved
+let pendingMarketplaceAction = null; // {id, action} set when a signed-out visitor clicks Buy/Claim on the public marketplace
 let displayNameById = {}; // account id -> current display name, kept fresh via the profiles-live subscription
 async function loadDisplayNames(){
   if(!sb) return;
@@ -2188,18 +2444,20 @@ function seedHistory(){
 function decideRoute(rule, condition, citizenWantsSale){
   if(condition === "good") return citizenWantsSale ? "sell" : "reuse";
   if(condition === "fair") return "repair";
-  return rule.recyclable ? "recycle" : "pyrolysis";
+  return rule.recyclable ? "recycle" : "disposal";
 }
 
 function determineAutoRoute(r){
-  if(r.flaggedHazard) return 'pyrolysis';
+  if(r.flaggedHazard) return 'disposal';
   if(r.condition === 'fair') return 'repair';
   const rule = TYPE_RULES.find(rule=>rule.type === r.type);
-  if(rule) return rule.recyclable ? 'recycle' : 'pyrolysis';
+  if(rule) return rule.recyclable ? 'recycle' : 'disposal';
   return 'recycle';
 }
 
 let REPORTS = BACKEND_ENABLED ? [] : seedHistory();
+let reportsChannel = null;
+let profilesChannel = null;
 if(BACKEND_ENABLED){
   try{
     initBackendData();
@@ -2225,6 +2483,8 @@ async function initBackendData(){
       const key = r.reportedBy || r.citizen;
       if(key) pointsLedger[key] = (pointsLedger[key]||0) + (r.points||0);
     });
+    renderAll();
+    renderPublicMarketplace();
   }
   await restoreSessionIfAny(session);
 }
@@ -2250,7 +2510,12 @@ async function restoreSessionIfAny(session){
 }
 function subscribeToBackendChanges(){
   if(!sb) return;
-  sb.channel('reports-live')
+  // Tear down any previous channels first: this gets called again on every
+  // sign-in/out, and Supabase will happily leave old subscriptions running
+  // (and double-firing) if we don't clean up before opening new ones.
+  if(reportsChannel) sb.removeChannel(reportsChannel);
+  if(profilesChannel) sb.removeChannel(profilesChannel);
+  reportsChannel = sb.channel('reports-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, payload => {
       if(payload.eventType === 'INSERT'){
         const isMine = payload.new.reported_by && myUserId && payload.new.reported_by === myUserId;
@@ -2265,10 +2530,11 @@ function subscribeToBackendChanges(){
       } else if(payload.eventType === 'DELETE'){
         REPORTS = REPORTS.filter(r=>r.id !== payload.old.id);
       }
-      if(currentRole) renderAll();
+      renderAll();
+      renderPublicMarketplace();
     })
     .subscribe();
-  sb.channel('profiles-live')
+  profilesChannel = sb.channel('profiles-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
       if(currentRole === 'admin') renderUsersTable();
       await loadDisplayNames();
@@ -2276,6 +2542,25 @@ function subscribeToBackendChanges(){
     })
     .subscribe();
 }
+// Realtime's row-level authorization is tied to the JWT that was active when
+// each channel was subscribed. Re-subscribing on every auth change (sign in,
+// sign out, token refresh) guarantees updates always reflect the viewer's
+// current session instead of whatever was active at first page load.
+if(BACKEND_ENABLED && sb){
+  sb.auth.onAuthStateChange(() => { subscribeToBackendChanges(); });
+}
+// Belt-and-braces refresh: whenever the tab regains focus, or every couple
+// of minutes while it's open, pull a fresh copy in case a realtime event
+// was ever missed (dropped connection, brief network blip, etc).
+if(BACKEND_ENABLED){
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) refreshReportsFromBackend();
+  });
+  setInterval(() => { if(!document.hidden) refreshReportsFromBackend(); }, 120000);
+}
+// Supabase gives us snake_case columns and ISO timestamp strings; the rest
+// of the app expects camelCase and epoch millis, so every row gets reshaped
+// here right after it comes off the wire (or a realtime event).
 function mapBackendRow(row){
   return {
     ...row,
@@ -2289,7 +2574,13 @@ function mapBackendRow(row){
     repairPhotoDataUrl: row.repair_photo_url,
     donationClaimed: row.donation_claimed,
     claimedBy: row.claimed_by,
+    claimedById: row.claimed_by_id,
+    buyerId: row.buyer_id,
+    soldAt: row.sold_at ? new Date(row.sold_at).getTime() : null,
+    donationClaimedAt: row.donation_claimed_at ? new Date(row.donation_claimed_at).getTime() : null,
     recyclerConfirmed: row.recycler_confirmed,
+    recyclerValue: row.recycler_value !== null && row.recycler_value !== undefined ? Number(row.recycler_value) : null,
+    handledBy: row.handled_by,
     collectedAt: row.collected_at ? new Date(row.collected_at).getTime() : null,
     hasPhoto: !!row.photo_url,
     classifiedBy: row.classified_by,
@@ -2443,15 +2734,15 @@ function renderSvgLineChart(containerId, labels, series){
   for(let g=0; g<=gridCount; g++){
     const val = Math.round(maxVal*g/gridCount);
     const y = yScale(val);
-    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb" stroke-width="1"></line>
-      <text x="${padL-6}" y="${y+3}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7280">${val}</text>`;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#d1d9d5" stroke-width="1"></line>
+      <text x="${padL-6}" y="${y+3}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="600" fill="#3f4a45">${val}</text>`;
   }
 
   let xLabels = '';
   const labelStride = Math.max(1, Math.ceil(n/7));
   labels.forEach((lab,i)=>{
     if(i % labelStride === 0 || i === n-1){
-      xLabels += `<text x="${xScale(i)}" y="${H-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7280">${escapeHtml(lab)}</text>`;
+      xLabels += `<text x="${xScale(i)}" y="${H-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="600" fill="#3f4a45">${escapeHtml(lab)}</text>`;
     }
   });
 
@@ -2466,10 +2757,12 @@ function renderSvgLineChart(containerId, labels, series){
     });
   });
 
-  const legend = series.map(s=>`<span style="display:inline-flex;align-items:center;gap:6px;margin-right:18px;font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);">
+  const legend = series.map(s=>`<span style="display:inline-flex;align-items:center;gap:6px;margin-right:18px;font-size:11px;font-weight:600;color:var(--ink);font-family:var(--font-mono);">
     <span style="width:10px;height:10px;border-radius:2px;background:${s.color};display:inline-block;"></span>${escapeHtml(s.label)}</span>`).join('');
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;">${gridLines}${paths}${xLabels}</svg>`;
+  // A near-opaque plate behind the plot itself, so the axis numbers and grid
+  // stay crisp no matter how busy the card's own background photo gets.
+  const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;"><rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="rgba(255,255,255,0.82)"></rect>${gridLines}${paths}${xLabels}</svg>`;
   container.innerHTML = `<div style="margin-bottom:8px;">${legend}</div>${svg}`;
 }
 
@@ -2477,7 +2770,7 @@ function renderStackedBarList(containerId, rows, seriesMeta){
   const container = document.getElementById(containerId);
   if(!container) return;
   const maxTotal = Math.max(1, ...rows.map(r=>r.values.reduce((a,b)=>a+b,0)));
-  const legend = seriesMeta.map(s=>`<span style="display:inline-flex;align-items:center;gap:6px;margin-right:18px;font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);">
+  const legend = seriesMeta.map(s=>`<span style="display:inline-flex;align-items:center;gap:6px;margin-right:18px;font-size:11px;font-weight:600;color:var(--ink);font-family:var(--font-mono);">
     <span style="width:10px;height:10px;border-radius:2px;background:${s.color};display:inline-block;"></span>${escapeHtml(s.label)}</span>`).join('');
   const barRows = rows.map(row=>{
     const total = row.values.reduce((a,b)=>a+b,0);
@@ -2566,6 +2859,7 @@ en: {
   toast_desc_missing:"Add a short description first.", toast_locality_missing:"Type your exact location, or pick a locality from the list.", toast_invalid_price:"Enter a valid resale price first.",
   toast_invalid_asking_price:"Enter a valid asking price first.", toast_sale_not_qualified:"Direct sale is not available for this condition",
   toast_contact_info_missing:"Add your name, contact and pickup address so buyers/claimers can reach you.",
+  toast_signin_to_buy:"Sign in as a citizen to complete the purchase.", toast_signin_to_claim:"Sign in as a citizen to claim this item.",
   toast_camera_unavailable:"Camera unavailable. Allow camera access when prompted, or use file upload instead. (Camera access needs the page served over localhost/https | not a plain double-clicked file.)",
   geocoding_note:"🌍 Locating",
   filed_under:"Filed under", for_hotspot_tracking:"for hotspot tracking.",
@@ -2598,7 +2892,7 @@ en: {
   myreports_repair_sold:"Repaired and sold to",
   myreports_recycle_awaiting:"Sent to a recycler cooperative | awaiting pickup confirmation",
   myreports_recycle_confirmed:"Picked up and confirmed by the recycler cooperative",
-  myreports_pyrolysis:"Sent to Doña Juana Sanitary Landfill for final disposal.",
+  myreports_disposal:"Sent to Doña Juana Sanitary Landfill for final disposal.",
   myreports_submitted:"Submitted", myreports_for:"for",
   btn_export_csv:"⬇ Export CSV", btn_export_json:"⬇ Export JSON", toast_export_done:"Downloaded.",
   status_claimed_by:"Claimed by", status_sold_to:"Sold to", status_for_sale:"For sale",
@@ -2606,7 +2900,7 @@ en: {
   no_photo_available:"No photo available", toast_repair_photo_added:"Repair photo added.", btn_add_photo:"📷 Add photo", label_original_photo:"Citizen's original photo", remove_photo:"Remove photo",
   btn_take_photo_short:"📷 Take photo", btn_upload_photo:"📤 Upload",
   flow_repair_title:"Repairable", flow_repair_desc:"Fair-condition items → sent to repairers, fixed, and resold to citizens as affordable second-hand goods.",
-  kpi_donations_claimed:"Donations claimed", kpi_items_resold:"Items resold via repair", kpi_items_sold_direct:"Sold directly by citizens", kpi_pyrolysis_share:"Share sent to final disposal (last resort)",
+  kpi_donations_claimed:"Donations claimed", kpi_items_resold:"Items resold via repair", kpi_items_sold_direct:"Sold directly by citizens", kpi_disposal_share:"Share sent to final disposal (last resort)",
   btn_mark_collected:"ASSIGN", ops_count_suffix:"items requiring municipal assignment.", route_unset:"- Not yet routed -", label_hazard:"Hazard", label_bulky:"Bulky", label_bulky_tip:"Oversized item, needs a dedicated bulky-waste pickup, not the regular curbside route.", label_needs_review:"Needs review", ops_needs_review_suffix:"need review", toast_type_corrected:"Type corrected for", toast_ai_unavailable:"AI classification unavailable right now | used a basic guess instead. An admin can still correct the type later.", toast_save_failed:"Could not save your report | please check your connection and try again.", nameSetup_title:"What should we call you?", nameSetup_subtitle:"Your account doesn't have a display name yet | this is what shows on the Leaderboard and throughout the app instead of your email.", btn_save_name:"Save and continue",
   toast_marked_collected:"assigned to",
   hotspots_title:"Hotspot Prediction",
@@ -2622,7 +2916,7 @@ en: {
   kpi_diversion:"Landfill diversion", kpi_energy:"Items sent to final disposal", kpi_ash:"Items with no other recovery path",
   circular_breakdown_title:"Recovery path breakdown",
   chart_lib_missing:"Chart couldn't load | check your internet connection and reload the page.",
-  chart_reuse:"Reuse / Donation", chart_sell:"Sold directly (P2P)", chart_repair:"Repair & Resell", chart_recycle:"Recycler cooperatives", chart_pyrolysis:"Final disposal (Doña Juana landfill)",
+  chart_reuse:"Reuse / Donation", chart_sell:"Sold directly (P2P)", chart_repair:"Repair & Resell", chart_recycle:"Recycler cooperatives", chart_disposal:"Final disposal (Doña Juana landfill)",
   dashboard_title:"Open Data & Governance Dashboard", dashboard_desc:"The live view seen by municipal authorities.",
   city_context_title:"Bogotá citywide context (UAESP, 2025-2026)", city_context_note:"Reference figures reported by UAESP to the Bogotá City Council (Proposition 63 of 2026), shown for context - not this platform's live data.",
   city_ctx_special_waste:"Special waste collected in 2025 (bulky + C&D)", city_ctx_critical_points:"Critical illegal-dumping points, end of 2025 (down from 623)", city_ctx_yoy:"Bulky-waste volume, Jan-May 2026 vs. Jan-May 2025",
@@ -2630,6 +2924,17 @@ en: {
   kpi_total:"Total reports", kpi_collected:"Collected", kpi_pending:"Pending",
   kpi_points:"Impact points awarded", kpi_response:"Avg. response time (sim.)", kpi_recycler_income:"Recycler income generated (COP, sim.)",
   kpi_bulky_pending:"Bulky items awaiting special pickup (need a dedicated route, not curbside)",
+  insights_title:"Marketplace & program performance", insights_desc:"Live conversion, value, and classification-quality metrics. Updates automatically as reports change.",
+  kpi_donation_claim_rate:"Donations claimed (of those listed)", kpi_direct_sale_rate:"Direct-sale items sold (of those listed)", kpi_ai_confidence:"Avg. AI classification confidence",
+  kpi_repair_value:"Value generated via repair resale (COP)", kpi_direct_sale_value:"Value generated via direct sale (COP)", kpi_hazard_rate:"Reports flagged hazardous",
+  chart_hazard_type_title:"Hazard flags by item type", chart_hazard_type_desc:"Where to focus safe-handling guidance for collection crews.", legend_hazard_flags:"Hazard flags",
+  pricing_title:"Pricing & classification trust", pricing_desc:"Are citizens pricing realistically, and how often does the AI need correcting?",
+  kpi_avg_asking_price:"Avg. citizen asking price (COP)", kpi_avg_sale_price:"Avg. actual sale price (COP)", kpi_admin_override_rate:"AI classifications later corrected by admin",
+  kpi_avg_time_to_claim:"Avg. time to claim a donation", kpi_avg_time_to_sale:"Avg. time to sell a listed item", kpi_top_citizen_share:"Share of activity from top 5 citizens",
+  chart_response_locality_title:"Avg. response time by locality (days)", chart_outcome_type_title:"Outcome by item type",
+  chart_diversion_trend_title:"Landfill diversion trend (weekly)", chart_reporters_trend_title:"New vs. returning citizens (weekly)",
+  legend_new_citizens:"New citizens", legend_returning_citizens:"Returning citizens", legend_diversion_rate:"Diversion rate",
+  chart_repair_workload_title:"Items repaired, by repairer", chart_recycle_workload_title:"Pickups confirmed, by recycler", legend_items_handled:"Items handled",
   unit_days:"days", legend_reported:"Reported", legend_collected:"Collected", legend_pending:"Pending",
   chart_time_title:"Reports over time", chart_locality_title:"Reports by locality",
   aqi_title:"Air quality index by locality (simulated)", aqi_desc:"Rises with unresolved waste buildup and burning risk.",
@@ -2639,7 +2944,8 @@ en: {
   pts_suffix:"pts",
   recycler_title:"Recycler Cooperative Portal",
   recycler_desc:"Materials routed to your cooperative | confirm pickup.",
-  kpi_awaiting:"Awaiting pickup", kpi_confirmed:"Confirmed this month", kpi_earnings:"Income earned (COP, sim.)",
+  kpi_awaiting:"Awaiting pickup", kpi_confirmed:"Confirmed this month", kpi_earnings:"Income earned (COP)",
+  placeholder_recycler_value:"Value collected (COP)", toast_recycler_value_missing:"Enter the value of the material before confirming.",
   btn_confirm_pickup:"Confirm pickup", status_awaiting:"awaiting pickup", status_confirmed:"confirmed",
   toast_pickup_confirmed:"Pickup confirmed for",
   status_pending:"pending", status_collected:"assigned", status_marketplace:"marketplace",
@@ -2744,7 +3050,7 @@ es: {
   myreports_repair_sold:"Reparado y vendido a",
   myreports_recycle_awaiting:"Enviado a una cooperativa de reciclaje | esperando confirmación de recolección",
   myreports_recycle_confirmed:"Recolectado y confirmado por la cooperativa de reciclaje",
-  myreports_pyrolysis:"Enviado al Relleno Sanitario Doña Juana para disposición final.",
+  myreports_disposal:"Enviado al Relleno Sanitario Doña Juana para disposición final.",
   myreports_submitted:"Enviado", myreports_for:"por",
   btn_export_csv:"⬇ Exportar CSV", btn_export_json:"⬇ Exportar JSON", toast_export_done:"Descargado.",
   status_claimed_by:"Reclamado por", status_sold_to:"Vendido a", status_for_sale:"En venta",
@@ -2752,7 +3058,7 @@ es: {
   no_photo_available:"Sin foto disponible", toast_repair_photo_added:"Foto de reparación añadida.", btn_add_photo:"📷 Añadir foto", label_original_photo:"Foto original del ciudadano", remove_photo:"Quitar foto",
   btn_take_photo_short:"📷 Tomar foto", btn_upload_photo:"📤 Subir",
   flow_repair_title:"Reparable", flow_repair_desc:"Objetos en estado regular → enviados a reparadores, arreglados y revendidos a ciudadanos como productos usados asequibles.",
-  kpi_donations_claimed:"Donaciones reclamadas", kpi_items_resold:"Objetos revendidos vía reparación", kpi_items_sold_direct:"Vendido directamente por ciudadanos", kpi_pyrolysis_share:"Porcentaje enviado a disposición final (último recurso)",
+  kpi_donations_claimed:"Donaciones reclamadas", kpi_items_resold:"Objetos revendidos vía reparación", kpi_items_sold_direct:"Vendido directamente por ciudadanos", kpi_disposal_share:"Porcentaje enviado a disposición final (último recurso)",
   btn_mark_collected:"Marcar recolectado", ops_count_suffix:"reportes totales en la cola.", route_unset:"- Sin ruta asignada -", label_hazard:"Peligro", label_bulky:"Voluminoso", label_bulky_tip:"Objeto de gran tamaño: necesita recolección especial, no la ruta regular de recolección.", label_needs_review:"Necesita revisión", ops_needs_review_suffix:"necesitan revisión", toast_type_corrected:"Tipo corregido para", toast_ai_unavailable:"Clasificación por IA no disponible | se usó una estimación básica. Un administrador puede corregir el tipo después.", toast_save_failed:"No se pudo guardar tu reporte | revisa tu conexión e inténtalo de nuevo.", nameSetup_title:"¿Cómo te llamamos?", nameSetup_subtitle:"Tu cuenta todavía no tiene un nombre | esto es lo que aparece en la Tabla de Posiciones y en toda la app en lugar de tu correo.", btn_save_name:"Guardar y continuar",
   toast_marked_collected:"marcado como recolectado → enrutado a",
   hotspots_title:"Predicción de Puntos Críticos",
@@ -2761,7 +3067,7 @@ es: {
   risk_list_title:"Riesgo previsto por localidad", top_hotspots_title:"Principales puntos críticos previstos (próximos 14 días)",
   hotspots_note:"Puntuación = Σ (reporte × peso de recencia) × multiplicador de contexto. Se recalcula tras registrar un nuevo reporte o activar un factor.",
   risk_pts_suffix:"pts de riesgo",
-  critical_points_title:"Puntos Críticos Conocidos — expediente de campo de UAESP", critical_points_desc:"Los 14 puntos críticos que UAESP ya ha relevado en campo, con el esquema completo que realmente usa el Distrito — no solo un puntaje de riesgo. Haz clic en un punto para ver el registro completo.",
+  critical_points_title:"Puntos Críticos Conocidos: expediente de campo de UAESP", critical_points_desc:"Los 14 puntos críticos que UAESP ya ha relevado en campo, con el esquema completo que realmente usa el Distrito, no solo un puntaje de riesgo. Haz clic en un punto para ver el registro completo.",
   circular_title:"Recuperación Circular de Recursos", circular_desc:"Los objetos se enrutan según la jerarquía de recuperación.",
   flow_reuse_title:"Reutilizable", flow_reuse_desc:"Buen estado → donado localmente.",
   flow_recycle_title:"Reciclable", flow_recycle_desc:"Metal, madera, electrodomésticos → cooperativas de reciclaje.",
@@ -2769,11 +3075,22 @@ es: {
   kpi_diversion:"Desvío del relleno sanitario", kpi_energy:"Objetos enviados a disposición final", kpi_ash:"Objetos sin otra ruta de aprovechamiento",
   circular_breakdown_title:"Desglose de rutas de recuperación",
   chart_lib_missing:"El gráfico no se pudo cargar | verifica tu conexión a internet y recarga la página.",
-  chart_reuse:"Reutilización / Donación", chart_sell:"Venta directa (P2P)", chart_repair:"Reparar y Revender", chart_recycle:"Cooperativas de reciclaje", chart_pyrolysis:"Disposición final (relleno Doña Juana)",
+  chart_reuse:"Reutilización / Donación", chart_sell:"Venta directa (P2P)", chart_repair:"Reparar y Revender", chart_recycle:"Cooperativas de reciclaje", chart_disposal:"Disposición final (relleno Doña Juana)",
   dashboard_title:"Datos Abiertos y Panel de Gobernanza", dashboard_desc:"La vista en vivo para las autoridades municipales.",
   kpi_total:"Reportes totales", kpi_collected:"Recolectados", kpi_pending:"Pendientes",
   kpi_points:"Puntos de impacto otorgados", kpi_response:"Tiempo de respuesta prom. (sim.)", kpi_recycler_income:"Ingresos generados para recicladores (COP, sim.)",
   kpi_bulky_pending:"Objetos voluminosos a la espera de recolección especial (no ruta regular)",
+  insights_title:"Rendimiento del mercado y del programa", insights_desc:"Métricas en vivo de conversión, valor y calidad de clasificación. Se actualizan automáticamente con cada reporte.",
+  kpi_donation_claim_rate:"Donaciones reclamadas (de las publicadas)", kpi_direct_sale_rate:"Objetos de venta directa vendidos (de los publicados)", kpi_ai_confidence:"Confianza promedio de la clasificación por IA",
+  kpi_repair_value:"Valor generado por reventa tras reparación (COP)", kpi_direct_sale_value:"Valor generado por venta directa (COP)", kpi_hazard_rate:"Reportes marcados como peligrosos",
+  chart_hazard_type_title:"Alertas de peligrosidad por tipo de objeto", chart_hazard_type_desc:"Dónde enfocar las indicaciones de manejo seguro para las cuadrillas de recolección.", legend_hazard_flags:"Alertas de peligrosidad",
+  pricing_title:"Precios y confianza en la clasificación", pricing_desc:"¿Los ciudadanos ponen precios realistas y con qué frecuencia hay que corregir a la IA?",
+  kpi_avg_asking_price:"Precio promedio pedido por el ciudadano (COP)", kpi_avg_sale_price:"Precio de venta real promedio (COP)", kpi_admin_override_rate:"Clasificaciones de IA corregidas luego por un admin",
+  kpi_avg_time_to_claim:"Tiempo promedio para reclamar una donación", kpi_avg_time_to_sale:"Tiempo promedio para vender un objeto publicado", kpi_top_citizen_share:"Porcentaje de actividad de los 5 ciudadanos principales",
+  chart_response_locality_title:"Tiempo de respuesta promedio por localidad (días)", chart_outcome_type_title:"Resultado por tipo de objeto",
+  chart_diversion_trend_title:"Tendencia de desvío de relleno sanitario (semanal)", chart_reporters_trend_title:"Ciudadanos nuevos vs. recurrentes (semanal)",
+  legend_new_citizens:"Ciudadanos nuevos", legend_returning_citizens:"Ciudadanos recurrentes", legend_diversion_rate:"Tasa de desvío",
+  chart_repair_workload_title:"Objetos reparados, por reparador", chart_recycle_workload_title:"Recolecciones confirmadas, por reciclador", legend_items_handled:"Objetos gestionados",
   unit_days:"días", legend_reported:"Reportado", legend_collected:"Recolectado", legend_pending:"Pendiente",
   chart_time_title:"Reportes a lo largo del tiempo", chart_locality_title:"Reportes por localidad",
   aqi_title:"Índice de calidad del aire por localidad (simulado)", aqi_desc:"Aumenta con residuos acumulados y riesgo de quema.",
@@ -2783,7 +3100,8 @@ es: {
   pts_suffix:"pts",
   recycler_title:"Portal de la Cooperativa de Reciclaje",
   recycler_desc:"Materiales enrutados a tu cooperativa | confirma la recolección.",
-  kpi_awaiting:"Pendientes de recolección", kpi_confirmed:"Confirmados este mes", kpi_earnings:"Ingresos generados (COP, sim.)",
+  kpi_awaiting:"Pendientes de recolección", kpi_confirmed:"Confirmados este mes", kpi_earnings:"Ingresos generados (COP)",
+  placeholder_recycler_value:"Valor recolectado (COP)", toast_recycler_value_missing:"Ingresa el valor del material antes de confirmar.",
   btn_confirm_pickup:"Confirmar recolección", status_awaiting:"pendiente de recolección", status_confirmed:"confirmado",
   toast_pickup_confirmed:"Recolección confirmada para",
   status_pending:"pendiente", status_collected:"recolectado",
@@ -3064,6 +3382,11 @@ function setRole(role){
   applyRoleVisibility();
   renderAll();
   resetInactivityTimer();
+  if(role === 'citizen' && pendingMarketplaceAction){
+    const { id, action } = pendingMarketplaceAction;
+    pendingMarketplaceAction = null;
+    if(action === 'buy') buyItem(id); else claimDonation(id);
+  }
 }
 function showGate(loggedOutByTimeout){
   if(BACKEND_ENABLED) backendSignOut();
@@ -3147,7 +3470,11 @@ function renderPublicMarketplace(){
   const ICON_SELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
   const ICON_DONATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8c-1.5-3-5-4-5-1.3C7 8 9 8 12 8z"/><path d="M12 8c1.5-3 5-4 5-1.3C17 8 15 8 12 8z"/></svg>';
   const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||'Marketplace item.',price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0])}));
-  grid.innerHTML = items.map(item=>`<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${escapeHtml(item.type)}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${item.route==='repair'?'Repaired':item.route==='sell'?'Direct sale':'Free donation'}</span><h3>${escapeHtml(item.type)}</h3><p>${escapeHtml(item.description)}</p><strong>${item.route==='reuse' ? 'FREE' : item.route==='sell' ? ('FOR SALE' + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : '')) : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '')}</strong><button type="button" class="ghost" style="margin-top:10px;width:100%;" onclick="openMarketplaceDetails(${item.id})">View details</button></div></article>`).join('');
+  grid.innerHTML = items.map(item=>{
+    const actionLabel = item.route === 'reuse' ? 'Claim it' : 'Buy it';
+    const actionCall = item.route === 'reuse' ? `publicBuyOrClaim(${item.id},'claim')` : `publicBuyOrClaim(${item.id},'buy')`;
+    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${escapeHtml(item.type)}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${item.route==='repair'?'Repaired':item.route==='sell'?'Direct sale':'Free donation'}</span><h3>${escapeHtml(item.type)}</h3><p>${escapeHtml(item.description)}</p><strong>${item.route==='reuse' ? 'FREE' : item.route==='sell' ? ('FOR SALE' + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : '')) : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '')}</strong><div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="ghost" style="flex:1;" onclick="openMarketplaceDetails(${item.id})">View details</button><button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
+  }).join('');
 }
 
 async function openMarketplaceDetails(reportId){
@@ -3182,6 +3509,13 @@ function closeContactDetailsModal(){
 function enterPortal(){
   document.getElementById('publicSite').style.display = 'none';
   showGate();
+}
+function publicBuyOrClaim(id, action){
+  pendingMarketplaceAction = { id, action };
+  toast(action === 'buy' ? t('toast_signin_to_buy') : t('toast_signin_to_claim'));
+  document.getElementById('publicSite').style.display = 'none';
+  showGate();
+  selectGateRole('citizen');
 }
 function backToMarketingSite(){
   document.getElementById('roleGate').style.display = 'none';
@@ -3842,13 +4176,21 @@ async function changeRoute(id, newRoute){
 }
 
 
+// confirmPickup, claimDonation, buyItem and markRepaired below all follow the
+// same shape: update the UI immediately so it feels instant, then confirm
+// with the backend RPC, and quietly roll the local change back if it's
+// rejected (item already taken, wrong role, etc).
 async function confirmPickup(id){
   const r = REPORTS.find(r=>r.id===id);
   if(!r || r.recyclerConfirmed) return;
+  const valueInput = document.getElementById('recyclerValue-'+id);
+  const value = valueInput ? parseFloat(valueInput.value) : NaN;
+  if(!value || value <= 0){ toast(t('toast_recycler_value_missing')); return; }
   r.recyclerConfirmed = true;
+  r.recyclerValue = value;
   renderAll();
-  const ok = await rpcReportAction('confirm_report_pickup', { p_report_id: id });
-  if(!ok){ r.recyclerConfirmed = false; renderAll(); return; }
+  const ok = await rpcReportAction('confirm_report_pickup', { p_report_id: id, p_value: value });
+  if(!ok){ r.recyclerConfirmed = false; r.recyclerValue = null; renderAll(); return; }
   toast(t('toast_pickup_confirmed') + " #ORC-" + id + ".");
 }
 
@@ -3960,11 +4302,11 @@ function captureRepairPhoto(){
 function renderOps(){
   const tbody = document.getElementById('opsTable');
   tbody.innerHTML = '';
-  const routeOptions = ['repair','recycle','pyrolysis'];
+  const routeOptions = ['repair','recycle','disposal'];
   const allTypes = TYPE_RULES.map(t=>t.type).concat('Other');
   let needsReviewCount = 0;
   const bulkyOnly = document.getElementById('opsBulkyOnly')?.checked;
-  REPORTS.filter(r=> r.status !== 'marketplace' && (!r.route || ['repair','recycle','pyrolysis'].includes(r.route)) && (!bulkyOnly || r.bulky)).forEach(r=>{
+  REPORTS.filter(r=> r.status !== 'marketplace' && (!r.route || ['repair','recycle','disposal'].includes(r.route)) && (!bulkyOnly || r.bulky)).forEach(r=>{
     const tr = document.createElement('tr');
     const routeSelect = r.status === 'collected'
       ? `<select id="route-select-${r.id}" onchange="changeRoute(${r.id}, this.value)" style="padding:4px 6px;font-size:11px;width:auto;">
@@ -4062,11 +4404,11 @@ function renderHotspots(){
 
 function renderCircular(){
   const collected = REPORTS.filter(r=>r.status==='collected' || r.status==='marketplace');
-  const counts = {reuse:0, sell:0, repair:0, recycle:0, pyrolysis:0};
+  const counts = {reuse:0, sell:0, repair:0, recycle:0, disposal:0};
   collected.forEach(r=> { if(r.route) counts[r.route] = (counts[r.route]||0) + 1; });
   const total = collected.length || 1;
   const diversion = Math.round(((counts.reuse + counts.sell + counts.repair + counts.recycle) / total) * 100);
-  const pyrolysisShare = Math.round((counts.pyrolysis / total) * 100);
+  const disposalShare = Math.round((counts.disposal / total) * 100);
 
   const donationsClaimed = REPORTS.filter(r=>r.route==='reuse' && r.donationClaimed).length;
   const itemsResold = REPORTS.filter(r=>r.route==='repair' && r.sold).length;
@@ -4076,20 +4418,23 @@ function renderCircular(){
   document.getElementById('kpiDonationsClaimed').textContent = donationsClaimed;
   document.getElementById('kpiItemsResold').textContent = itemsResold;
   document.getElementById('kpiItemsSoldDirect').textContent = itemsSoldDirect;
-  document.getElementById('kpiEnergy').textContent = counts.pyrolysis;
-  document.getElementById('kpiAsh').textContent = pyrolysisShare + '%';
-  document.getElementById('kpiPyrolysisShare').textContent = pyrolysisShare + '%';
+  document.getElementById('kpiEnergy').textContent = counts.disposal;
+  document.getElementById('kpiAsh').textContent = disposalShare + '%';
+  document.getElementById('kpiDisposalShare').textContent = disposalShare + '%';
 
   renderSvgDonut('circularChart', [
     { label: t('chart_reuse'), value: counts.reuse, color: '#6fcf7a' },
     { label: t('chart_sell'), value: counts.sell, color: '#b79ce8' },
     { label: t('chart_repair'), value: counts.repair, color: '#e2933f' },
     { label: t('chart_recycle'), value: counts.recycle, color: '#6fa8c9' },
-    { label: t('chart_pyrolysis'), value: counts.pyrolysis, color: '#b0603f' }
+    { label: t('chart_disposal'), value: counts.disposal, color: '#b0603f' }
   ], t('kpi_collected'));
 }
 
 
+// The municipal Open Data & Governance Dashboard. Everything here is derived
+// straight from REPORTS on every render, so it's always current. There's no
+// separate aggregation step or stored snapshot to keep in sync.
 function renderDashboard(){
   const total = REPORTS.length;
   const collected = REPORTS.filter(r=>r.status==='collected').length;
@@ -4148,6 +4493,152 @@ function renderDashboard(){
   renderStackedBarList('localityChart', localityRows, [
     { label: t('legend_pending'), color: '#e2933f' },
     { label: t('legend_collected'), color: '#6fcf7a' }
+  ]);
+
+  const donated = REPORTS.filter(r=>r.route==='reuse' && r.status==='marketplace');
+  const donationClaimRate = donated.length ? Math.round(donated.filter(r=>r.donationClaimed).length / donated.length * 100) : 0;
+  const listedForSale = REPORTS.filter(r=>r.route==='sell' && r.status==='marketplace');
+  const directSaleRate = listedForSale.length ? Math.round(listedForSale.filter(r=>r.sold).length / listedForSale.length * 100) : 0;
+  const aiClassified = REPORTS.filter(r=>r.classifiedBy==='ai' && typeof r.aiConfidence==='number');
+  const aiConfidenceText = aiClassified.length ? Math.round(aiClassified.reduce((sum,r)=>sum+r.aiConfidence,0) / aiClassified.length * 100) + '%' : '-';
+  const repairValue = REPORTS.filter(r=>r.route==='repair' && r.sold).reduce((sum,r)=>sum+(r.price||0), 0);
+  const directSaleValue = listedForSale.filter(r=>r.sold).reduce((sum,r)=>sum+(r.price||0), 0);
+  const hazardRate = total ? Math.round(REPORTS.filter(r=>r.flaggedHazard).length / total * 100) : 0;
+
+  document.getElementById('kpiDonationClaimRate').textContent = donationClaimRate + '%';
+  document.getElementById('kpiDirectSaleRate').textContent = directSaleRate + '%';
+  document.getElementById('kpiAiConfidence').textContent = aiConfidenceText;
+  document.getElementById('kpiRepairValue').textContent = '$' + repairValue.toLocaleString('en-US');
+  document.getElementById('kpiDirectSaleValue').textContent = '$' + directSaleValue.toLocaleString('en-US');
+  document.getElementById('kpiHazardRate').textContent = hazardRate + '%';
+
+  // Which item types actually trigger the hazard flag, so ops can brief
+  // collection crews on the specific things worth being careful with.
+  // A citywide "3% flagged" number alone doesn't tell you what to watch for.
+  const hazardByType = {};
+  REPORTS.filter(r=>r.flaggedHazard).forEach(r=>{
+    hazardByType[r.type] = (hazardByType[r.type]||0) + 1;
+  });
+  const hazardTypeRows = Object.entries(hazardByType)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,8)
+    .map(([type,count])=>({ label: type, values: [count] }));
+  renderStackedBarList('hazardByTypeChart', hazardTypeRows, [
+    { label: t('legend_hazard_flags'), color: '#b4530f' }
+  ]);
+
+  // Pricing & classification trust
+  const soldDirect = listedForSale.filter(r=>r.sold && r.price);
+  const avgAsking = soldDirect.length ? Math.round(soldDirect.reduce((s,r)=>s+(r.askingPrice||r.price||0),0) / soldDirect.length) : 0;
+  const avgSale = soldDirect.length ? Math.round(soldDirect.reduce((s,r)=>s+(r.price||0),0) / soldDirect.length) : 0;
+  const typedReports = REPORTS.filter(r=>r.classifiedBy);
+  const overrideRate = typedReports.length ? Math.round(typedReports.filter(r=>r.classifiedBy==='admin_corrected').length / typedReports.length * 100) : 0;
+  const claimedWithTimes = REPORTS.filter(r=>r.donationClaimedAt);
+  const avgClaimText = claimedWithTimes.length
+    ? (claimedWithTimes.reduce((s,r)=>s+(r.donationClaimedAt-r.timestamp),0) / claimedWithTimes.length / 86400000).toFixed(1) + ' ' + t('unit_days')
+    : '-';
+  const soldWithTimes = REPORTS.filter(r=>r.soldAt);
+  const avgSaleTimeText = soldWithTimes.length
+    ? (soldWithTimes.reduce((s,r)=>s+(r.soldAt-r.timestamp),0) / soldWithTimes.length / 86400000).toFixed(1) + ' ' + t('unit_days')
+    : '-';
+  const sortedByPoints = Object.entries(pointsLedger).sort((a,b)=>b[1]-a[1]);
+  const totalPoints = sortedByPoints.reduce((s,[,p])=>s+p,0);
+  const top5Points = sortedByPoints.slice(0,5).reduce((s,[,p])=>s+p,0);
+  const topCitizenShare = totalPoints ? Math.round(top5Points / totalPoints * 100) : 0;
+
+  document.getElementById('kpiAvgAskingPrice').textContent = '$' + avgAsking.toLocaleString('en-US');
+  document.getElementById('kpiAvgSalePrice').textContent = '$' + avgSale.toLocaleString('en-US');
+  document.getElementById('kpiAdminOverrideRate').textContent = overrideRate + '%';
+  document.getElementById('kpiAvgTimeToClaim').textContent = avgClaimText;
+  document.getElementById('kpiAvgTimeToSale').textContent = avgSaleTimeText;
+  document.getElementById('kpiTopCitizenShare').textContent = topCitizenShare + '%';
+
+  // Response time by locality (collected items only)
+  const localityResponseRows = chartBuckets.map(l=>{
+    const items = REPORTS.filter(r=>r.localityBucket===l && r.status==='collected' && r.collectedAt);
+    const avgDays = items.length ? Math.round((items.reduce((s,r)=>s+(r.collectedAt-r.timestamp),0) / items.length / 86400000) * 10) / 10 : 0;
+    return { label: l, values: [avgDays] };
+  }).filter(row=>row.values[0] > 0);
+  renderStackedBarList('responseLocalityChart', localityResponseRows, [
+    { label: t('kpi_response'), color: '#0284c7' }
+  ]);
+
+  // Outcome by item type
+  const ROUTE_COLORS = { reuse:'#6fcf7a', sell:'#3fa9e2', repair:'#e2933f', recycle:'#8b6fcf', disposal:'#b0603f' };
+  const itemTypes = [...new Set(REPORTS.map(r=>r.type).filter(Boolean))];
+  const outcomeRows = itemTypes.map(type=>{
+    const items = REPORTS.filter(r=>r.type===type && r.route);
+    return {
+      label: type,
+      values: ['reuse','sell','repair','recycle','disposal'].map(route=>items.filter(r=>r.route===route).length)
+    };
+  }).filter(row=>row.values.reduce((a,b)=>a+b,0) > 0);
+  renderStackedBarList('outcomeTypeChart', outcomeRows, [
+    { label: t('chart_reuse'), color: ROUTE_COLORS.reuse },
+    { label: t('chart_sell'), color: ROUTE_COLORS.sell },
+    { label: t('chart_repair'), color: ROUTE_COLORS.repair },
+    { label: t('chart_recycle'), color: ROUTE_COLORS.recycle },
+    { label: t('chart_disposal'), color: ROUTE_COLORS.disposal }
+  ]);
+
+  // Weekly diversion-rate trend and new-vs-returning citizens (last 8 weeks)
+  const weekStarts = [];
+  const weekAnchor = new Date(); weekAnchor.setHours(0,0,0,0);
+  weekAnchor.setDate(weekAnchor.getDate() - weekAnchor.getDay());
+  for(let i=7;i>=0;i--){
+    weekStarts.push(new Date(weekAnchor.getTime() - i*7*86400000));
+  }
+  const weekLabels = weekStarts.map(d=>fmtDate(d.getTime()));
+  const seenCitizens = new Set();
+  const diversionSeries = [], newCitizenSeries = [], returningCitizenSeries = [];
+  weekStarts.forEach((start,i)=>{
+    const end = new Date(start.getTime() + 7*86400000);
+    const weekReports = REPORTS.filter(r=>r.timestamp >= start.getTime() && r.timestamp < end.getTime());
+    const withRoute = weekReports.filter(r=>r.route);
+    const diverted = withRoute.filter(r=>r.route !== 'disposal').length;
+    diversionSeries.push(withRoute.length ? Math.round(diverted/withRoute.length*100) : 0);
+    let newCount = 0, returningCount = 0;
+    const weekCitizens = new Set();
+    weekReports.forEach(r=>{
+      const key = r.reportedBy || r.citizen;
+      if(!key || weekCitizens.has(key)) return;
+      weekCitizens.add(key);
+      if(seenCitizens.has(key)) returningCount++; else newCount++;
+    });
+    weekCitizens.forEach(key=>seenCitizens.add(key));
+    newCitizenSeries.push(newCount);
+    returningCitizenSeries.push(returningCount);
+  });
+  renderSvgLineChart('diversionTrendChart', weekLabels, [
+    { label: t('legend_diversion_rate'), data: diversionSeries, color: '#6fcf7a' }
+  ]);
+  renderSvgLineChart('reportersTrendChart', weekLabels, [
+    { label: t('legend_new_citizens'), data: newCitizenSeries, color: '#3fa9e2' },
+    { label: t('legend_returning_citizens'), data: returningCitizenSeries, color: '#e2933f' }
+  ]);
+
+  // Repairer / recycler workload: who has actually handled what
+  const nameFor = key => displayNameById[key] || key;
+  const repairWorkload = {};
+  REPORTS.filter(r=>r.route==='repair' && r.repaired && r.handledBy).forEach(r=>{
+    repairWorkload[r.handledBy] = (repairWorkload[r.handledBy]||0) + 1;
+  });
+  const repairWorkloadRows = Object.entries(repairWorkload)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([id,count])=>({ label: nameFor(id), values: [count] }));
+  renderStackedBarList('repairWorkloadChart', repairWorkloadRows, [
+    { label: t('legend_items_handled'), color: '#e2933f' }
+  ]);
+
+  const recycleWorkload = {};
+  REPORTS.filter(r=>r.route==='recycle' && r.recyclerConfirmed && r.handledBy).forEach(r=>{
+    recycleWorkload[r.handledBy] = (recycleWorkload[r.handledBy]||0) + 1;
+  });
+  const recycleWorkloadRows = Object.entries(recycleWorkload)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([id,count])=>({ label: nameFor(id), values: [count] }));
+  renderStackedBarList('recycleWorkloadChart', recycleWorkloadRows, [
+    { label: t('legend_items_handled'), color: '#8b6fcf' }
   ]);
 }
 
@@ -4217,7 +4708,7 @@ function renderRecycler(){
   const items = REPORTS.filter(r=>r.route==='recycle');
   const awaiting = items.filter(r=>!r.recyclerConfirmed).length;
   const confirmed = items.filter(r=>r.recyclerConfirmed).length;
-  const earnings = confirmed * 45000;
+  const earnings = items.filter(r=>r.recyclerConfirmed).reduce((sum,r)=>sum+(r.recyclerValue||0), 0);
 
   const elA = document.getElementById('kpiRecyclerAwaiting');
   const elC = document.getElementById('kpiRecyclerConfirmed');
@@ -4231,19 +4722,28 @@ function renderRecycler(){
   tbody.innerHTML = '';
   items.forEach(r=>{
     const tr = document.createElement('tr');
+    const action = r.recyclerConfirmed
+      ? `<span class="small-note">$${Number(r.recyclerValue||0).toLocaleString('en-US')} COP</span>`
+      : `<div style="display:flex;gap:6px;align-items:center;">
+           <input type="text" id="recyclerValue-${r.id}" placeholder="${t('placeholder_recycler_value')}" style="width:120px;padding:6px 8px;font-size:12px;">
+           <button class="ghost" onclick="confirmPickup(${r.id})">${t('btn_confirm_pickup')}</button>
+         </div>`;
     tr.innerHTML = `
       <td>ORC-${r.id}</td>
       <td>${r.locality}</td>
       <td>${r.type}</td>
       <td style="text-transform:capitalize">${r.condition}</td>
       <td><span class="pill ${r.recyclerConfirmed ? 'collected' : 'pending'}">${r.recyclerConfirmed ? t('status_confirmed') : t('status_awaiting')}</span></td>
-      <td>${!r.recyclerConfirmed ? `<button class="ghost" onclick="confirmPickup(${r.id})">${t('btn_confirm_pickup')}</button>` : ''}</td>
+      <td>${action}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 
+// Builds the three marketplace lists a citizen can act on: free donations,
+// items sold directly by their owner, and items a repairer has fixed up.
+// Anything already claimed/sold or off the marketplace is left out.
 function renderMarketplace(){
   const donationsList = document.getElementById('donationsList');
   const directSaleList = document.getElementById('directSaleList');
@@ -4280,7 +4780,7 @@ function renderMarketplace(){
       const row = document.createElement('div');
       row.className = 'risk-row';
       row.innerHTML = `${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}
-        <div class="risk-name" style="width:auto;flex:1;">${escapeHtml(r.type)} | ${escapeHtml(r.locality)} <span class="pill sell">${t('tag_direct_sale')}</span> <span class="pill repair">$${r.price.toLocaleString('en-US')} COP</span> <span class="pill as-is" title="${escapeHtml(t('trust_asis_note'))}">${t('tag_as_is')}</span>${descSnippet(r)}</div>
+        <div class="risk-name" style="width:auto;flex:1;">${escapeHtml(r.type)} | ${escapeHtml(r.locality)} <span class="pill sell">${t('tag_direct_sale')}</span> <span class="pill repair">$${(r.price ?? r.askingPrice ?? 0).toLocaleString('en-US')} COP</span> <span class="pill as-is" title="${escapeHtml(t('trust_asis_note'))}">${t('tag_as_is')}</span>${descSnippet(r)}</div>
         <button class="ghost" onclick="buyItem(${r.id})">${t('btn_buy')}</button>`;
       directSaleList.appendChild(row);
     });
@@ -4296,7 +4796,7 @@ function renderMarketplace(){
       row.className = 'risk-row';
       const thumbSrc = r.repairPhotoDataUrl ? [r.repairPhotoDataUrl] : r.photoDataUrls;
       row.innerHTML = `${renderThumb(thumbSrc, r.type, r.seedIconSvg)}
-        <div class="risk-name" style="width:auto;flex:1;">${escapeHtml(r.type)} | ${escapeHtml(r.locality)} <span class="pill repair">${t('tag_repaired')}</span> <span class="pill repair">$${r.price.toLocaleString('en-US')} COP</span> <span class="pill verified" title="${escapeHtml(t('trust_verified_note'))}">✓ ${t('tag_verified')}</span>${descSnippet(r)}</div>
+        <div class="risk-name" style="width:auto;flex:1;">${escapeHtml(r.type)} | ${escapeHtml(r.locality)} <span class="pill repair">${t('tag_repaired')}</span> <span class="pill repair">$${(r.price ?? 0).toLocaleString('en-US')} COP</span> <span class="pill verified" title="${escapeHtml(t('trust_verified_note'))}">✓ ${t('tag_verified')}</span>${descSnippet(r)}</div>
         <button class="ghost" onclick="buyItem(${r.id})">${t('btn_buy')}</button>`;
       forSaleList.appendChild(row);
     });
@@ -4304,15 +4804,21 @@ function renderMarketplace(){
 }
 
 
+// A report's status stays 'marketplace' forever once it's listed there.
+// sold/donationClaimed are separate flags, not a status change, so this
+// has to check those flags explicitly rather than relying on status alone.
 function outcomeLine(r){
   if(r.status === 'marketplace'){
-    if(r.route === 'sell') return t('myreports_sell_listed') + ' $' + (r.price ?? r.askingPrice ?? 0).toLocaleString('en-US') + ' COP';
+    if(r.route === 'sell'){
+      return r.sold ? (t('myreports_sell_sold') + ' ' + escapeHtml(r.buyer) + ' ' + t('myreports_for') + ' $' + (r.price ?? r.askingPrice ?? 0).toLocaleString('en-US') + ' COP')
+                    : (t('myreports_sell_listed') + ' $' + (r.price ?? r.askingPrice ?? 0).toLocaleString('en-US') + ' COP');
+    }
     if(r.route === 'repair'){
       if(!r.repaired) return t('myreports_repair_awaiting');
       return r.sold ? (t('myreports_repair_sold') + ' ' + escapeHtml(r.buyer) + ' ' + t('myreports_for') + ' $' + (r.price ?? 0).toLocaleString('en-US') + ' COP')
                     : (t('myreports_repair_listed') + ' $' + (r.price ?? 0).toLocaleString('en-US') + ' COP');
     }
-    return t('myreports_donation_awaiting');
+    return r.donationClaimed ? (t('myreports_donation_claimed') + ' ' + escapeHtml(r.claimedBy)) : t('myreports_donation_awaiting');
   }
   if(r.condition === 'good' && !r.route) return t('myreports_choice_pending');
   if(r.status !== 'collected') return t('myreports_awaiting_collection');
@@ -4328,8 +4834,8 @@ function outcomeLine(r){
                     : (t('myreports_repair_listed') + ' $' + (r.price ?? 0).toLocaleString('en-US') + ' COP');
     case 'recycle':
       return r.recyclerConfirmed ? t('myreports_recycle_confirmed') : t('myreports_recycle_awaiting');
-    case 'pyrolysis':
-      return t('myreports_pyrolysis');
+    case 'disposal':
+      return t('myreports_disposal');
     default:
       return t('myreports_awaiting_collection');
   }
@@ -4372,7 +4878,7 @@ function downloadBlob(content, mimeType, filename){
 }
 const ROUTE_EXPORT_LABELS = {
   reuse: 'donated_reuse', sell: 'sold_direct', repair: 'repaired_resold',
-  recycle: 'recycled', pyrolysis: 'final_disposal'
+  recycle: 'recycled', disposal: 'final_disposal'
 };
 const CSV_EXPORT_COLUMNS = [
   ['id', r=>r.id],
@@ -4395,11 +4901,17 @@ const CSV_EXPORT_COLUMNS = [
   ['collected_at', r=>r.collectedAt ? new Date(r.collectedAt).toISOString() : ''],
   ['hours_to_collection', r=> (r.collectedAt && r.timestamp) ? Math.round(((r.collectedAt - r.timestamp) / 36000)) / 100 : ''],
   ['sold', r=>!!r.sold],
+  ['sold_at', r=>r.soldAt ? new Date(r.soldAt).toISOString() : ''],
   ['buyer', r=>r.buyer || ''],
   ['donation_claimed', r=>!!r.donationClaimed],
+  ['donation_claimed_at', r=>r.donationClaimedAt ? new Date(r.donationClaimedAt).toISOString() : ''],
   ['claimed_by', r=>r.claimedBy || ''],
   ['repaired', r=>!!r.repaired],
   ['recycler_confirmed', r=>!!r.recyclerConfirmed],
+  ['recycler_value', r=>r.recyclerValue ?? ''],
+  ['handled_by_id', r=>r.handledBy || ''],
+  ['buyer_id', r=>r.buyerId || ''],
+  ['claimed_by_id', r=>r.claimedById || ''],
   ['description', r=>r.description || '']
 ];
 function exportReports(format){
@@ -4471,7 +4983,7 @@ function renderRepairerPortal(){
       row.className = 'risk-row';
       const statusText = r.sold ? (t('status_sold_to') + ' ' + escapeHtml(r.buyer)) : t('status_for_sale');
       row.innerHTML = `${renderThumb(r.repairPhotoDataUrl ? [r.repairPhotoDataUrl] : r.photoDataUrls, r.type, r.seedIconSvg)}
-        <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(r.type)} | $${r.price.toLocaleString('en-US')} COP</div>
+        <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(r.type)} | $${(r.price ?? 0).toLocaleString('en-US')} COP</div>
         <span class="pill ${r.sold ? 'collected' : 'repair'}">${statusText}</span>`;
       listedEl.appendChild(row);
     });
