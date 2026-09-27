@@ -75,14 +75,16 @@ serve(async (req) => {
 async function callVisionModel(description: string, imageBase64: string | null) {
   const prompt = `You are a municipal bulky-waste sorting assistant helping route a discarded household item for collection.
 ${description
-    ? `The citizen's own description: "${description}"`
+    ? `The citizen's own description: "${description}"
+
+Use this description together with the photo, not just the photo alone. If the citizen states something explicit that the photo can't fully show or confirm (e.g. "doesn't turn on", "barely used", "it's actually two mattresses stacked"), trust their words for that detail unless the photo clearly contradicts it. The description is real evidence, not decoration - never classify off the photo alone when a description was given.`
     : "No text description was provided - you must identify the item from the photo alone. Look carefully at its shape, material, size relative to anything else visible, and distinguishing features (fabric or cushions, wood grain, metal casing, a screen, wheels, drawers, etc.) before deciding."}
 
 If more than one object is visible, focus on the single most prominent discarded item clearly being reported - not incidental background objects.
 
 Reply with a JSON object with exactly these keys:
-- "type": the specific item, 2-4 plain words (e.g. "Bed frame", "Suitcase", "Office chair", "Car battery"). If it clearly matches one of these known categories, use that exact name: ${JSON.stringify(VALID_TYPES.filter(t=>t!=='Other'))}. If it doesn't match any of them well, give your own specific, concrete name instead - never a vague catch-all like "bulky waste," "household item," or "furniture." Only use "Other" if you genuinely cannot tell what the object is at all (e.g. an unrecognizable shape, or the photo is unusable).
-- "condition": one of "good", "fair", "damaged" - "good" means still fully usable/resellable, "fair" means usable but worn or needing minor repair, "damaged" means visibly broken or non-functional.
+- "type": the specific item, 2-4 plain words (e.g. "Bed frame", "Suitcase", "Office chair", "Car battery"). If it clearly matches one of these known categories, use that exact name: ${JSON.stringify(VALID_TYPES.filter(t=>t!=='Other'))}. If it doesn't match any of them well, give your own specific, concrete name instead - never a vague catch-all like "bulky waste," "household item," or "furniture." Only use "Other" if you genuinely cannot tell what the object is at all (e.g. an unrecognizable shape, or the photo is unusable). If the description names the item and the photo is ambiguous or partial, prefer the citizen's own naming.
+- "condition": one of "good", "fair", "damaged" - "good" means still fully usable/resellable, "fair" means usable but worn or needing minor repair, "damaged" means visibly broken or non-functional. If the description makes an explicit condition claim ("works fine", "no funciona", "like new"), that claim outweighs an ambiguous visual read - only override it if the photo unmistakably shows otherwise (e.g. they said "like new" but it's visibly cracked and rusted).
 - "hazard": boolean - true only for a real handling hazard (visible asbestos-like material, gas cylinders, car/vehicle batteries, chemical containers, a large amount of broken glass, leaking fluids). False for ordinary furniture/appliances even if damaged.
 - "confidence": a number between 0 and 1 - lower it if the photo is blurry, dark, distant, or the item is only partially visible.
 - "disposal_instructions": one short practical sentence for the collection crew.`;
