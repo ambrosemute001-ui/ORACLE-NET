@@ -805,6 +805,24 @@ function loadScriptFallback(fallbackSrc){
     background:rgba(255,255,255,.78);
   }
 
+  /* Phone layout for the public pages. The page wrapper keeps 40px of side
+     padding, which on a 390px screen left the hero only ~270px to work with,
+     while the hero panel was sized from the screen width (~335px) and ran
+     off the right edge. Inner sections already carry their own side padding,
+     so the wrapper's is dropped here and the panel is sized from its container. */
+  .hero-panel{max-width:100%;box-sizing:border-box;}
+  .home-hero > *{min-width:0;}
+  @media(max-width:620px){
+    .pub-page{padding-left:0;padding-right:0;}
+    .hero-panel{width:100%;max-width:350px;padding:18px;}
+    .hero-object{padding:14px;gap:12px;}
+    .hero-object-image{width:70px;height:70px;font-size:40px;flex-shrink:0;}
+    .hero-object strong{font-size:20px;}
+    .hero-float-one{right:6px;top:30px;}
+    .hero-float-two{left:8px;}
+    .home-proof-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;}
+  }
+
 </style>
 </head>
 <body>
@@ -1553,7 +1571,7 @@ function loadScriptFallback(fallbackSrc){
     </div>
     <div class="card" id="recyclerTableCard">
       <table>
-        <thead><tr><th data-i18n="th_id">ID</th><th data-i18n="th_locality">Locality</th><th data-i18n="th_material">Material</th><th data-i18n="th_condition">Condition</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
+        <thead><tr><th data-i18n="th_id">ID</th><th data-i18n="th_photo">Photo</th><th data-i18n="th_locality">Locality</th><th data-i18n="th_material">Material</th><th data-i18n="th_condition">Condition</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
         <tbody id="recyclerTable"></tbody>
       </table>
     </div>
@@ -1665,13 +1683,38 @@ async function loadReportsFromBackend(retryCount){
   }
   return data.map(mapBackendRow);
 }
+// What the database returns depends on who is asking: signed out, RLS only
+// exposes marketplace listings; signed in, every report comes back. So the
+// list has to be re-fetched whenever the signed-in user changes, not just at
+// page load.
+let reportsRequestSeq = 0;
+let reportsAppliedSeq = 0;
+
+// Swap in a freshly loaded set of reports and rebuild everything derived
+// from it (next local id, per-citizen points totals).
+function applyLoadedReports(rows){
+  REPORTS = rows;
+  reportSeq = rows.reduce((max,r)=>Math.max(max, r.id), 0) + 1;
+  pointsLedger = {};
+  rows.forEach(r=>{
+    const key = r.reportedBy || r.citizen;
+    if(key) pointsLedger[key] = (pointsLedger[key]||0) + (r.points||0);
+  });
+}
+
+// Fetch, apply and redraw. Several of these can be in flight at once (page
+// load, login, tab refocus), so a response is dropped if a newer one has
+// already been applied.
 async function refreshReportsFromBackend(){
+  const seq = ++reportsRequestSeq;
   const rows = await loadReportsFromBackend();
-  if(rows){
-    REPORTS = rows;
-    renderAll();
-    renderPublicMarketplace();
-  }
+  if(!rows) return false;
+  if(seq < reportsAppliedSeq) return true;
+  reportsAppliedSeq = seq;
+  applyLoadedReports(rows);
+  renderAll();
+  renderPublicMarketplace();
+  return true;
 }
 async function uploadPhotoToBackend(dataUrl, prefix){
   if(!sb || !dataUrl || !dataUrl.startsWith('data:')) return dataUrl || null;
@@ -2474,18 +2517,7 @@ async function initBackendData(){
     session = data.session;
   } catch(err){ console.error('get session', err); }
 
-  const rows = await loadReportsFromBackend();
-  if(rows){
-    REPORTS = rows;
-    reportSeq = rows.reduce((max,r)=>Math.max(max, r.id), 0) + 1;
-    pointsLedger = {};
-    rows.forEach(r=>{
-      const key = r.reportedBy || r.citizen;
-      if(key) pointsLedger[key] = (pointsLedger[key]||0) + (r.points||0);
-    });
-    renderAll();
-    renderPublicMarketplace();
-  }
+  await refreshReportsFromBackend();
   await restoreSessionIfAny(session);
 }
 async function restoreSessionIfAny(session){
@@ -2525,15 +2557,28 @@ function subscribeToBackendChanges(){
         const key = mapped.reportedBy || mapped.citizen;
         if(key) pointsLedger[key] = (pointsLedger[key]||0) + (mapped.points||0);
       } else if(payload.eventType === 'UPDATE'){
+        const mapped = mapBackendRow(payload.new);
         const idx = REPORTS.findIndex(r=>r.id === payload.new.id);
-        if(idx !== -1) REPORTS[idx] = mapBackendRow(payload.new);
+        if(idx !== -1){
+          REPORTS[idx] = mapped;
+        } else {
+          // First time this viewer is seeing the row (e.g. a repaired item that
+          // has just been listed for sale), so add it instead of dropping it.
+          REPORTS.unshift(mapped);
+          const key = mapped.reportedBy || mapped.citizen;
+          if(key) pointsLedger[key] = (pointsLedger[key]||0) + (mapped.points||0);
+        }
       } else if(payload.eventType === 'DELETE'){
         REPORTS = REPORTS.filter(r=>r.id !== payload.old.id);
       }
       renderAll();
       renderPublicMarketplace();
     })
-    .subscribe();
+    .subscribe(status => {
+      // Anything that changed between the last fetch and this channel actually
+      // going live would otherwise be missed, so catch up once it is live.
+      if(status === 'SUBSCRIBED') refreshReportsFromBackend();
+    });
   profilesChannel = sb.channel('profiles-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
       if(currentRole === 'admin') renderUsersTable();
@@ -2543,20 +2588,34 @@ function subscribeToBackendChanges(){
     .subscribe();
 }
 // Realtime's row-level authorization is tied to the JWT that was active when
-// each channel was subscribed. Re-subscribing on every auth change (sign in,
-// sign out, token refresh) guarantees updates always reflect the viewer's
-// current session instead of whatever was active at first page load.
+// each channel was subscribed, and the reports a viewer is allowed to see
+// change with their session. So on every auth change we re-subscribe, and when
+// the actual user changes (sign in, sign out, switching accounts) we also
+// re-fetch, otherwise the list stays stuck on whatever the previous session
+// could see.
+let lastAuthUserId = null;
 if(BACKEND_ENABLED && sb){
-  sb.auth.onAuthStateChange(() => { subscribeToBackendChanges(); });
+  sb.auth.onAuthStateChange((event, session) => {
+    const uid = session && session.user ? session.user.id : null;
+    const userChanged = uid !== lastAuthUserId;
+    lastAuthUserId = uid;
+    // Deferred on purpose: calling back into supabase from inside this
+    // callback can deadlock the client.
+    setTimeout(() => {
+      if(userChanged || event === 'TOKEN_REFRESHED') subscribeToBackendChanges();
+      if(userChanged) refreshReportsFromBackend();
+    }, 0);
+  });
 }
-// Belt-and-braces refresh: whenever the tab regains focus, or every couple
-// of minutes while it's open, pull a fresh copy in case a realtime event
-// was ever missed (dropped connection, brief network blip, etc).
+// Backstop for the realtime channel: pull a fresh copy when the tab regains
+// focus, when the network comes back, and once a minute while the page is
+// open, in case an event was missed (dropped connection, sleeping laptop, etc).
 if(BACKEND_ENABLED){
   document.addEventListener('visibilitychange', () => {
     if(!document.hidden) refreshReportsFromBackend();
   });
-  setInterval(() => { if(!document.hidden) refreshReportsFromBackend(); }, 120000);
+  window.addEventListener('online', () => refreshReportsFromBackend());
+  setInterval(() => { if(!document.hidden) refreshReportsFromBackend(); }, 60000);
 }
 // Supabase gives us snake_case columns and ISO timestamp strings; the rest
 // of the app expects camelCase and epoch millis, so every row gets reshaped
@@ -3365,6 +3424,11 @@ async function attemptLogin(){
   }
 
   errEl.textContent = '';
+  // Now that we're signed in the full report list is visible to us, so load
+  // it (and the display names for the leaderboard) before drawing the dashboard.
+  if(BACKEND_ENABLED){
+    await Promise.all([refreshReportsFromBackend(), loadDisplayNames()]);
+  }
   setRole(loggedInRole);
   if(loggedInRole === 'admin') renderUsersTable();
   loginInProgress = false;
@@ -3382,6 +3446,11 @@ function setRole(role){
   applyRoleVisibility();
   renderAll();
   resetInactivityTimer();
+  // Other routes into here (name popup, restored session) haven't necessarily
+  // loaded the signed-in view of the data yet, so make sure it is current.
+  // Skipped when a buy/claim is queued: the login route already loaded fresh
+  // data, and a refresh landing mid-purchase would flicker the item back.
+  if(BACKEND_ENABLED && !pendingMarketplaceAction) refreshReportsFromBackend();
   if(role === 'citizen' && pendingMarketplaceAction){
     const { id, action } = pendingMarketplaceAction;
     pendingMarketplaceAction = null;
@@ -4730,6 +4799,7 @@ function renderRecycler(){
          </div>`;
     tr.innerHTML = `
       <td>ORC-${r.id}</td>
+      <td>${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}</td>
       <td>${r.locality}</td>
       <td>${r.type}</td>
       <td style="text-transform:capitalize">${r.condition}</td>
