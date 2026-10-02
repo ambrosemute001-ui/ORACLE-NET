@@ -1,4 +1,4 @@
-// Oracle Net service worker — app-shell caching only.
+// Oracle Net service worker: app-shell caching only.
 // Bump CACHE_NAME on every deploy so old clients pick up the new shell.
 const CACHE_NAME = 'oracle-net-shell-v2';
 const SHELL_FILES = [
