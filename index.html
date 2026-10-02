@@ -72,7 +72,23 @@ function loadScriptFallback(fallbackSrc){
   .gate-auth textarea, .who-card p, .sec-desc, .small-note, .card, .card p, .card label { font-family:var(--font-body); }
   .pub-nav button, .pub-page button, .gate-auth button { font-family:var(--font-body); }
   input, textarea, select { font-size:15px; line-height:1.45; }
-  html,body{margin:0;padding:0;background:var(--basalt);color:var(--ink);font-family:var(--font-body);font-size:15px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  html,body{margin:0;padding:0;background:var(--basalt);color:var(--ink);font-family:var(--font-body);font-size:15px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;}
+  .install-banner{
+    position:fixed;top:0;left:0;right:0;z-index:300;
+    display:flex;align-items:center;gap:12px;
+    background:var(--ember);color:#fff;
+    padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top, 0px));
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+    font-family:var(--font-body);
+  }
+  .install-banner-icon{font-size:22px;flex-shrink:0;}
+  .install-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+  .install-banner-text b{font-size:13.5px;line-height:1.3;}
+  .install-banner-text span{font-size:12px;line-height:1.3;color:rgba(255,255,255,.88);}
+  .install-banner #installBannerAction{background:#fff;color:var(--ember);border:none;padding:8px 14px;font-size:12.5px;font-weight:700;border-radius:18px;white-space:nowrap;flex-shrink:0;}
+  .install-banner-close{background:none;border:none;color:#fff;opacity:.75;font-size:15px;cursor:pointer;padding:4px 6px;flex-shrink:0;}
+  .install-banner-close:hover{opacity:1;}
+  @media(max-width:600px){.install-banner-text b{font-size:12.5px;}.install-banner-text span{font-size:11px;}}
   body{
     min-height:100vh;
     background:
@@ -249,8 +265,8 @@ function loadScriptFallback(fallbackSrc){
   label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:14px 0 6px;font-family:var(--font-mono);letter-spacing:.01em;}
   label:first-of-type{margin-top:0;}
   input[type=text], textarea, select, input[type=file]{
-    width:100%;background:rgba(231,240,234,0.72);border:1px solid var(--line);border-radius:6px;color:var(--ink);
-    padding:10px 12px;font-family:var(--font-body);font-size:14px;
+    width:100%;background:rgba(255,255,255,0.88);border:1.5px solid #7f9c8c;border-radius:6px;color:var(--ink);
+    padding:10px 12px;font-family:var(--font-body);font-size:14px;box-shadow:0 1px 3px rgba(15,46,33,0.08);
   }
   input::placeholder, textarea::placeholder{color:rgba(28,43,36,0.62);opacity:1;}
   textarea{min-height:70px;resize:vertical;}
@@ -861,6 +877,15 @@ function loadScriptFallback(fallbackSrc){
 </style>
 </head>
 <body>
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span class="install-banner-icon" aria-hidden="true">♻</span>
+  <div class="install-banner-text">
+    <b id="installBannerTitle"></b>
+    <span id="installBannerBody"></span>
+  </div>
+  <button type="button" id="installBannerAction" class="primary" style="display:none;" onclick="triggerInstallPrompt()"></button>
+  <button type="button" class="install-banner-close" onclick="dismissInstallBanner()" aria-label="Dismiss">✕</button>
+</div>
 <div id="publicSite">
   <nav class="pub-nav">
     <div class="pub-brand">♻️ Oracle Net</div>
@@ -1643,7 +1668,7 @@ function loadScriptFallback(fallbackSrc){
         <h3 data-i18n="users_list_title">Existing users</h3>
         <div style="max-height:400px;overflow-y:auto;">
           <table>
-            <thead><tr><th data-i18n="th_email">Email</th><th data-i18n="th_role">Role</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
+            <thead><tr><th data-i18n="th_user">User</th><th data-i18n="th_role">Role</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
             <tbody id="usersTable"></tbody>
           </table>
         </div>
@@ -2147,10 +2172,10 @@ async function renderUsersTable(){
   const tbody = document.getElementById('usersTable');
   if(!tbody) return;
   if(!sb){ tbody.innerHTML = `<tr><td colspan="4" class="small-note">Backend not configured.</td></tr>`; return; }
-  const { data, error } = await sb.from('profiles').select('id, email, role, active, org_id, ruro_number');
+  const { data, error } = await sb.from('profiles').select('id, email, display_name, role, active, org_id, ruro_number');
   if(error){ tbody.innerHTML = `<tr><td colspan="4" class="small-note">${error.message}</td></tr>`; return; }
   tbody.innerHTML = data.map(u => `<tr>
-      <td>${u.email}</td><td>${u.role}</td>
+      <td>${escapeHtml(u.display_name || '')}<br><a href="mailto:${escapeHtml(u.email)}" style="font-family:var(--font-mono);font-size:12px;">${escapeHtml(u.email)}</a></td><td>${u.role}</td>
       <td><span class="pill ${u.active ? 'collected' : 'pending'}">${u.active ? 'active' : 'pending approval'}</span></td>
       <td>
         ${!u.active ? `<button class="ghost" onclick="adminApproveUser('${u.id}','${u.email}')">Approve</button>` : ''}
@@ -2734,7 +2759,9 @@ function seedHistory(){
     const citizen = CITIZENS[Math.floor(Math.random()*CITIZENS.length)];
     const collected = Math.random() > 0.25;
     const route = decideRoute(rule, condition);
-    const points = 10 + rule.effort;
+    // Matches the real scoring used at submission time: 2 base, 0-6 scaled
+    // from handling effort, no photo bonus here since seed data has none.
+    const points = 2 + Math.round(((rule.effort - 5) / 10) * 6);
     pointsLedger[citizen] = (pointsLedger[citizen]||0) + points;
     const submittedAt = now - daysAgo*86400000;
     const collectedAt = collected ? Math.min(now, submittedAt + (86400000 + Math.random()*3*86400000)) : null;
@@ -3171,6 +3198,9 @@ en: {
   // Public marketing site strings (nav + all 6 pages), grouped here together
   // since they share no keys with the signed-in app above them.
   nav_home:"Home", nav_about:"About", nav_events:"Events", nav_donate:"Donate", nav_contact:"Contact Us", nav_sign_in:"Sign in",
+  install_title:"Install Oracle Net", install_btn:"Install",
+  install_body_android:"Add it to your home screen for one-tap access, even with a weak connection.",
+  install_body_ios:"Tap the Share icon, then \"Add to Home Screen\", for one-tap access any time.",
   nav_marketplace_upper:"MARKETPLACE", nav_contact_label:"Contact",
   home_eyebrow:"ORACLE NET · BOGOTÁ", home_hero_title_line1:"Give every item", home_hero_title_line2:"a better next life.",
   home_hero_sub:"Report bulky waste, identify the item, and connect it with the right reuse or recovery path.",
@@ -3211,6 +3241,7 @@ en: {
   pubmarket_empty:"Marketplace is empty.", pubmarket_item_default_desc:"Marketplace item.",
   pubmarket_claim_it:"Claim it", pubmarket_buy_it:"Buy it", pubmarket_view_details:"View details",
   pubmarket_tag_direct_sale:"Direct sale", pubmarket_tag_donation:"Free donation", pubmarket_free:"FREE", pubmarket_for_sale:"FOR SALE",
+  pubmarket_contact_repairer:"Contact repairer", contact_label_repairer:"Repairer", contact_label_seller:"Contact name",
   pubmarket_lead:"Free donations and citizen-direct sales are published here without waiting for municipal approval. Repaired items appear after a repairer completes the assigned job.",
   donate_kicker:"DONATE", donate_title:"Have an item someone else could use?",
   donate_body:"Choose Donate freely when reporting it. If the AI confirms that it is suitable for reuse, Oracle Net places it directly on the public marketplace, no municipal collection-queue approval required.",
@@ -3232,7 +3263,7 @@ en: {
   toast_org_name_missing:"Enter the organisation's name.", toast_org_created:"Organisation added.", toast_org_assigned:"Organisation updated.",
   users_new_title:"Add a new user", users_list_title:"Existing users",
   label_email:"Email", label_role:"Role", btn_invite_user:"Create account",
-  th_email:"Email", th_role:"Role",
+  th_email:"Email", th_user:"User", th_role:"Role",
   link_create_account:"Create an account",
   btn_create_account:"Create account",
   link_forgot_password:"Forgot password?", btn_send_reset_link:"Send reset link",
@@ -3269,7 +3300,7 @@ en: {
   placeholder_locality_other:"Type your exact location (e.g. street, landmark, neighbourhood)",
  placeholder_description:"Optional | e.g. Old mattress and a broken wardrobe left on the sidewalk near the park. A photo alone is enough.",
  btn_capture:"Capture", btn_cancel:"Cancel",
-  label_waste_items:"Waste items", label_waste_item:"Waste item", btn_add_waste_item:"+ Add another waste item", btn_remove_item:"✕ Remove item",
+  label_waste_items:"Waste items", label_waste_item:"Waste item", label_waste_item_first:"Describe what you have", btn_add_waste_item:"+ Add another waste item", btn_remove_item:"✕ Remove item",
   toast_max_items:"You can report up to 5 items in one submission.", toast_item_input_missing:"Add a description or a photo for at least one waste item.",
   toast_items_logged_suffix:"items logged", label_item_number_prefix:"Item",
   btn_send_report:"Send report",
@@ -3299,7 +3330,10 @@ en: {
   points_awarded_suffix:"Impact Points awarded. You'll be notified once it's collected.",
   toast_report_logged:"logged -", toast_points_awarded:"points awarded.",
   ops_title:"Assignment Queue", ops_desc:"Assign only items that need repair, recycling or authorized final disposal.", ops_bulky_filter:"Show bulky items only (need a dedicated pickup route)",
-  th_id:"ID", th_photo:"Photo", th_locality:"Locality", th_type:"Type", th_condition:"Condition", th_points:"Points", th_status:"Status", th_route:"Route", th_reroute:"Re-route", th_material:"Material",
+  th_id:"ID", th_photo:"Photo", th_locality:"Locality", th_type:"Type", th_condition:"Condition", th_points:"Points", th_status:"Status", th_route:"Route", th_reroute:"Re-route", th_material:"Material", th_reported_by:"Reported by",
+  btn_view_reporter:"Who reported this", loading_ellipsis:"Loading...",
+  reporter_unavailable_demo:"Reporter details are unavailable in local demo mode.", reporter_unavailable:"Reporter details are not available for this item.",
+  reporter_name_label:"Reported by:", reporter_email_label:"Email:", reporter_note_label:"Their note:", reporter_unknown:"Not available", reporter_no_note:"No note left.",
   marketplace_title:"Marketplace", marketplace_desc:"Claim free donations or buy repaired items cheap.",
   marketplace_donations_title:"Free donations",
   marketplace_directsale_title:"Sold directly by citizens",
@@ -3401,6 +3435,9 @@ en: {
 es: {
   hero_eyebrow:"Reto 6 · Gobernanza de Residuos Voluminosos de Bogotá",
   nav_home:"Inicio", nav_about:"Acerca de", nav_events:"Eventos", nav_donate:"Donar", nav_contact:"Contáctanos", nav_sign_in:"Iniciar sesión",
+  install_title:"Instala Oracle Net", install_btn:"Instalar",
+  install_body_android:"Agrégala a tu pantalla de inicio para acceso con un toque, incluso con conexión débil.",
+  install_body_ios:"Toca el ícono de Compartir y luego \"Agregar a pantalla de inicio\" para acceso con un toque.",
   nav_marketplace_upper:"MERCADO", nav_contact_label:"Contacto",
   home_eyebrow:"ORACLE NET · BOGOTÁ", home_hero_title_line1:"Dale a cada objeto", home_hero_title_line2:"una mejor próxima vida.",
   home_hero_sub:"Reporta residuos voluminosos, identifica el objeto y conéctalo con la ruta de reúso o recuperación correcta.",
@@ -3441,6 +3478,7 @@ es: {
   pubmarket_empty:"El mercado está vacío.", pubmarket_item_default_desc:"Artículo del mercado.",
   pubmarket_claim_it:"Reclamarlo", pubmarket_buy_it:"Comprarlo", pubmarket_view_details:"Ver detalles",
   pubmarket_tag_direct_sale:"Venta directa", pubmarket_tag_donation:"Donación gratuita", pubmarket_free:"GRATIS", pubmarket_for_sale:"EN VENTA",
+  pubmarket_contact_repairer:"Contactar reparador", contact_label_repairer:"Reparador", contact_label_seller:"Nombre de contacto",
   pubmarket_lead:"Las donaciones gratuitas y las ventas directas de ciudadanos se publican aquí sin esperar aprobación municipal. Los objetos reparados aparecen después de que un reparador completa el trabajo asignado.",
   donate_kicker:"DONAR", donate_title:"¿Tienes un objeto que alguien más podría usar?",
   donate_body:"Elige Donar gratis al reportarlo. Si la IA confirma que es apto para reúso, Oracle Net lo coloca directamente en el mercado público, sin necesidad de aprobación de la cola de recolección municipal.",
@@ -3462,7 +3500,7 @@ es: {
   toast_org_name_missing:"Ingresa el nombre de la organización.", toast_org_created:"Organización agregada.", toast_org_assigned:"Organización actualizada.",
   users_new_title:"Agregar nuevo usuario", users_list_title:"Usuarios existentes",
   label_email:"Correo electrónico", label_role:"Rol", btn_invite_user:"Crear cuenta",
-  th_email:"Correo electrónico", th_role:"Rol",
+  th_email:"Correo electrónico", th_user:"Usuario", th_role:"Rol",
   link_create_account:"Crear una cuenta",
   btn_create_account:"Crear cuenta",
   link_forgot_password:"¿Olvidaste tu contraseña?", btn_send_reset_link:"Enviar enlace de restablecimiento",
@@ -3499,7 +3537,7 @@ es: {
   placeholder_locality_other:"Escribe tu ubicación exacta (ej. calle, punto de referencia, barrio)",
  placeholder_description:"Opcional | ej. Colchón viejo y armario roto dejados en la acera cerca del parque. Una foto sola es suficiente.",
  btn_capture:"Capturar", btn_cancel:"Cancelar",
-  label_waste_items:"Artículos de residuos", label_waste_item:"Artículo", btn_add_waste_item:"+ Agregar otro artículo", btn_remove_item:"✕ Quitar artículo",
+  label_waste_items:"Artículos de residuos", label_waste_item:"Artículo", label_waste_item_first:"Describe lo que tienes", btn_add_waste_item:"+ Agregar otro artículo", btn_remove_item:"✕ Quitar artículo",
   toast_max_items:"Puedes reportar hasta 5 artículos en un solo envío.", toast_item_input_missing:"Agrega una descripción o una foto para al menos un artículo.",
   toast_items_logged_suffix:"artículos registrados", label_item_number_prefix:"Artículo",
   btn_send_report:"Enviar reporte",
@@ -3529,7 +3567,10 @@ es: {
   points_awarded_suffix:"Puntos de Impacto otorgados. Te notificaremos cuando sea recolectado.",
   toast_report_logged:"registrado -", toast_points_awarded:"puntos otorgados.",
   ops_title:"Cola de Recolección", ops_desc:"Marca los reportes como recolectados para iniciar la recuperación circular.", ops_bulky_filter:"Mostrar solo objetos voluminosos (necesitan ruta de recolección especial)",
-  th_id:"ID", th_photo:"Foto", th_locality:"Localidad", th_type:"Tipo", th_condition:"Estado", th_points:"Puntos", th_status:"Estado", th_route:"Ruta", th_reroute:"Redirigir", th_material:"Material",
+  th_id:"ID", th_photo:"Foto", th_locality:"Localidad", th_type:"Tipo", th_condition:"Estado", th_points:"Puntos", th_status:"Estado", th_route:"Ruta", th_reroute:"Redirigir", th_material:"Material", th_reported_by:"Reportado por",
+  btn_view_reporter:"Quién reportó esto", loading_ellipsis:"Cargando...",
+  reporter_unavailable_demo:"Los detalles del reportante no están disponibles en modo de demostración local.", reporter_unavailable:"Los detalles del reportante no están disponibles para este objeto.",
+  reporter_name_label:"Reportado por:", reporter_email_label:"Correo:", reporter_note_label:"Su nota:", reporter_unknown:"No disponible", reporter_no_note:"No dejó ninguna nota.",
   marketplace_title:"Mercado", marketplace_desc:"Reclama donaciones gratis o compra objetos reparados baratos.",
   marketplace_donations_title:"Donaciones gratuitas",
   marketplace_directsale_title:"Vendido directamente por ciudadanos",
@@ -4015,7 +4056,8 @@ function renderPublicMarketplace(){
     const priceLabel = item.route==='reuse' ? t('pubmarket_free')
       : item.route==='sell' ? (t('pubmarket_for_sale') + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : ''))
       : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '');
-    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="ghost" style="flex:1;" onclick="openMarketplaceDetails(${item.id})">${t('pubmarket_view_details')}</button><button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
+    const detailsLabel = item.route==='repair' ? t('pubmarket_contact_repairer') : t('pubmarket_view_details');
+    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="ghost" style="flex:1;" onclick="openMarketplaceDetails(${item.id})">${detailsLabel}</button><button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
   }).join('');
 }
 
@@ -4023,7 +4065,7 @@ async function openMarketplaceDetails(reportId){
   const modal = document.getElementById('contactDetailsModal');
   const body = document.getElementById('contactDetailsBody');
   if(!modal || !body) return;
-  body.innerHTML = '<p class="small-note">Loading…</p>';
+  body.innerHTML = `<p class="small-note">${t('loading_ellipsis')}</p>`;
   modal.style.display = 'flex';
   if(!sb){
     body.innerHTML = '<p class="small-note">Details are unavailable in local demo mode.</p>';
@@ -4035,12 +4077,39 @@ async function openMarketplaceDetails(reportId){
     return;
   }
   const d = data[0];
+  const sourceReport = REPORTS.find(x=>x.id===reportId);
+  const contactWhoLabel = sourceReport && sourceReport.route === 'repair' ? t('contact_label_repairer') : t('contact_label_seller');
   body.innerHTML = `
     <p style="margin:0 0 10px;">${escapeHtml(d.description || '')}</p>
     <p style="margin:6px 0;"><b>Location:</b> ${escapeHtml(d.locality || '')}</p>
-    <p style="margin:6px 0;"><b>Contact name:</b> ${escapeHtml(d.contact_name || 'Not provided')}</p>
+    <p style="margin:6px 0;"><b>${escapeHtml(contactWhoLabel)}:</b> ${escapeHtml(d.contact_name || 'Not provided')}</p>
     <p style="margin:6px 0;"><b>Phone / WhatsApp:</b> ${escapeHtml(d.contact_phone || 'Not provided')}</p>
     <p style="margin:6px 0;"><b>Pickup address:</b> ${escapeHtml(d.exact_address || 'Not provided')}</p>
+  `;
+}
+// The admin/repairer/recycler equivalent of openMarketplaceDetails above:
+// who reported this item and how to reach them, for actually finding and
+// collecting it, not for a marketplace exchange.
+async function openReporterDetails(reportId){
+  const modal = document.getElementById('contactDetailsModal');
+  const body = document.getElementById('contactDetailsBody');
+  if(!modal || !body) return;
+  body.innerHTML = `<p class="small-note">${t('loading_ellipsis')}</p>`;
+  modal.style.display = 'flex';
+  if(!sb){
+    body.innerHTML = `<p class="small-note">${t('reporter_unavailable_demo')}</p>`;
+    return;
+  }
+  const { data, error } = await sb.rpc('get_reporter_info', { p_report_id: reportId });
+  if(error || !data || !data.length){
+    body.innerHTML = `<p class="small-note">${t('reporter_unavailable')}</p>`;
+    return;
+  }
+  const d = data[0];
+  body.innerHTML = `
+    <p style="margin:0 0 10px;"><b>${t('reporter_name_label')}</b> ${escapeHtml(d.display_name || t('reporter_unknown'))}</p>
+    <p style="margin:6px 0;"><b>${t('reporter_email_label')}</b> ${escapeHtml(d.email || t('reporter_unknown'))}</p>
+    <p style="margin:6px 0;"><b>${t('reporter_note_label')}</b> ${escapeHtml(d.description || t('reporter_no_note'))}</p>
   `;
 }
 function closeContactDetailsModal(){
@@ -4286,7 +4355,7 @@ function renderWasteItemRows(){
         </div>`).join('')
     }</div>` : '';
     return `<div class="card" style="padding:14px;margin-bottom:10px;background:var(--basalt-2);">
-      <label style="margin:0 0 6px;">${t('label_waste_item')} ${i+1}</label>
+      <label style="margin:0 0 6px;">${i===0 ? t('label_waste_item_first') : t('label_waste_item') + ' ' + (i+1)}</label>
       <textarea class="witem-desc" data-index="${i}" data-i18n-placeholder="placeholder_description" placeholder="${escapeHtml(t('placeholder_description'))}">${escapeHtml(item.desc)}</textarea>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
         <button type="button" class="ghost" onclick="openWasteItemCamera(${i})">${t('btn_take_photo_short')}</button>
@@ -4624,7 +4693,15 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
       condition = await new Promise(resolve => estimateConditionFromSource(item.desc, photoSource, resolve));
       classifiedBy = 'heuristic';
     }
-    const points = 10 + rule.effort + (photoSource ? 5 : 0);
+    // Points per report: 2 to 10 total, three parts.
+    //  - 2 base, for any valid report.
+    //  - 0 to 6, scaled from the item's handling effort (how bulky, heavy or
+    //    hazardous it typically is to deal with; TYPE_RULES.effort runs 5 to
+    //    15), since correctly flagging a harder item is worth more.
+    //  - 2 if a photo was attached, since that is what lets the AI actually
+    //    classify the item rather than guessing from text alone.
+    const effortBonus = Math.round(((rule.effort - 5) / 10) * 6);
+    const points = 2 + effortBonus + (photoSource ? 2 : 0);
     const pointsKey = myUserId || citizen;
     pointsLedger[pointsKey] = (pointsLedger[pointsKey]||0) + points;
     const bulky = rule.bulky !== undefined ? rule.bulky : /mattress|colch|sofa|couch|sill[oó]n|canap|wardrobe|armario|closet|armoire|fridge|refrigerator|nevera|washing machine|lavadora|construction|debris|escombro|rubble|bed frame|\bcama\b|\btable\b|\bmesa\b|\bdoor\b|puerta|air conditioner|cabinet|gabinete|carpet|rug|alfombra|garden waste|yard waste|ramas/i.test((rule.type||'') + ' ' + item.desc);
@@ -4916,6 +4993,13 @@ function captureRepairPhoto(){
 }
 
 
+// Small "who reported this" button reused across the admin queue, the
+// recycler table and the repairer queue, the three shared views where
+// someone actually has to go find and collect an item.
+function reporterButtonHtml(r){
+  if(!BACKEND_ENABLED || !r.reportedBy) return '';
+  return `<button type="button" class="ghost" style="padding:3px 8px;font-size:11px;" onclick="openReporterDetails(${r.id})">${t('btn_view_reporter')}</button>`;
+}
 function renderOps(){
   const tbody = document.getElementById('opsTable');
   tbody.innerHTML = '';
@@ -4942,9 +5026,9 @@ function renderOps(){
            <select onchange="correctReportType(${r.id}, this.value)" style="padding:3px 5px;font-size:11px;width:auto;">
              ${allTypes.map(opt=>`<option value="${opt}" ${r.type===opt?'selected':''}>${escapeHtml(translateType(opt))}</option>`).join('')}
            </select>
-           ${reviewControl(r)} ${assistControl(r)}
+           ${reviewControl(r)} ${assistControl(r)} ${reporterButtonHtml(r)}
          </div>`
-      : `${translateType(r.type)}${r.flaggedHazard ? ` <span class="pill" style="background:#fee2e2;color:var(--danger);" title="${escapeHtml(r.aiNotes||'Flagged as a handling hazard')}">⚠ ${t('label_hazard')}</span>` : ''}${r.bulky ? ` <span class="pill" style="background:#e6effa;color:#1d4ed8;" title="${t('label_bulky_tip')}">${t('label_bulky')}</span>` : ''} ${reviewControl(r)} ${assistControl(r)}`;
+      : `${translateType(r.type)}${r.flaggedHazard ? ` <span class="pill" style="background:#fee2e2;color:var(--danger);" title="${escapeHtml(r.aiNotes||'Flagged as a handling hazard')}">⚠ ${t('label_hazard')}</span>` : ''}${r.bulky ? ` <span class="pill" style="background:#e6effa;color:#1d4ed8;" title="${t('label_bulky_tip')}">${t('label_bulky')}</span>` : ''} ${reviewControl(r)} ${assistControl(r)} ${reporterButtonHtml(r)}`;
 
     tr.innerHTML = `
       <td>ORC-${r.id}</td>
@@ -5673,7 +5757,7 @@ function renderRecycler(){
       <td>ORC-${r.id}</td>
       <td>${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}</td>
       <td>${r.locality}</td>
-      <td>${translateType(r.type)}<div style="margin-top:4px;">${reviewControl(r)} ${assistControl(r)}</div></td>
+      <td>${translateType(r.type)}<div style="margin-top:4px;">${reviewControl(r)} ${assistControl(r)} ${reporterButtonHtml(r)}</div></td>
       <td style="text-transform:capitalize">${r.condition}</td>
       <td><span class="pill ${r.recyclerConfirmed ? 'collected' : 'pending'}">${r.recyclerConfirmed ? t('status_confirmed') : t('status_awaiting')}</span>${claimLine}</td>
       <td>${action}</td>
@@ -5999,7 +6083,7 @@ function renderRepairerPortal(){
              </label>
            </div>`;
       wrap.innerHTML = `<div class="risk-row" style="border-bottom:none;margin-bottom:8px;">${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}
-        <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(translateType(r.type))} | ${escapeHtml(r.locality)} ${reviewControl(r)} ${assistControl(r)}</div>
+        <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(translateType(r.type))} | ${escapeHtml(r.locality)} ${reviewControl(r)} ${assistControl(r)} ${reporterButtonHtml(r)}</div>
         <input type="text" id="price-${r.id}" placeholder="${t('placeholder_price')}" style="width:110px;padding:6px 8px;font-size:12px;">
         ${photoStatus}
         <button class="ghost" onclick="markRepaired(${r.id})">${t('btn_mark_repaired')}</button></div>
@@ -6086,6 +6170,76 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').catch(err=>console.warn('Service worker registration failed:', err));
   });
+}
+
+// ---- "Install this app" prompt, for Android/desktop Chrome and iOS ----
+// Chromium browsers fire a real event we can hold onto and trigger later
+// from our own button; iOS has no such event at all, Safari only offers
+// install through its manual Share -> Add to Home Screen, so the most we
+// can do there is show them where to find it.
+let deferredInstallPrompt = null;
+const INSTALL_DISMISS_KEY = 'oracleNetInstallDismissed';
+
+function isRunningStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice(){
+  const ua = navigator.userAgent || '';
+  // iPadOS 13+ reports as "Macintosh" but, unlike a real Mac, has touch
+  // support, which is the standard way to tell the two apart.
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+function showInstallBanner(kind){
+  if(localStorage.getItem(INSTALL_DISMISS_KEY) === '1') return;
+  if(isRunningStandalone()) return;
+  const banner = document.getElementById('installBanner');
+  const titleEl = document.getElementById('installBannerTitle');
+  const bodyEl = document.getElementById('installBannerBody');
+  const actionEl = document.getElementById('installBannerAction');
+  if(!banner) return;
+  titleEl.textContent = t('install_title');
+  if(kind === 'ios'){
+    bodyEl.textContent = t('install_body_ios');
+    actionEl.style.display = 'none';
+  } else {
+    bodyEl.textContent = t('install_body_android');
+    actionEl.textContent = t('install_btn');
+    actionEl.style.display = 'inline-block';
+  }
+  banner.style.display = 'flex';
+  // Fixed-position, so push the rest of the page down by its real height
+  // (text length and safe-area insets vary) rather than letting it sit on
+  // top of the existing nav bar.
+  requestAnimationFrame(() => { document.body.style.paddingTop = banner.offsetHeight + 'px'; });
+}
+function dismissInstallBanner(){
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.style.display = 'none';
+  document.body.style.paddingTop = '';
+  localStorage.setItem(INSTALL_DISMISS_KEY, '1');
+}
+async function triggerInstallPrompt(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  // Whatever they chose, the prompt can only be used once - clear it and
+  // hide our banner either way.
+  deferredInstallPrompt = null;
+  dismissInstallBanner();
+}
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner('android');
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  dismissInstallBanner();
+});
+if(isIOSDevice() && !isRunningStandalone()){
+  // No install event exists on iOS, so there's nothing to wait for - show
+  // the instructional banner once the page has had a moment to settle.
+  setTimeout(()=>showInstallBanner('ios'), 1200);
 }
 </script>
 </body>
