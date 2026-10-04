@@ -6,6 +6,9 @@
 <title>Oracle Net | Bogotá Symbiosis Engine</title>
 
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+<link rel="dns-prefetch" href="https://images.unsplash.com">
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1605270160644-d52c6515c141?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1100">
 <meta name="theme-color" content="#176b45">
 <meta name="description" content="Report bulky waste, track its journey, and connect it to reuse, repair, or recycling in Bogotá.">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
@@ -97,7 +100,7 @@ function loadScriptFallback(fallbackSrc){
       radial-gradient(750px 600px at 96% 60%, rgba(180,83,9,0.06), transparent 60%),
       radial-gradient(1050px 820px at 44% 115%, rgba(23,107,69,0.14), transparent 60%),
       linear-gradient(180deg, rgba(248,252,249,.68) 0%, rgba(237,245,240,.62) 45%, rgba(231,241,236,.62) 100%),
-      url('https://images.unsplash.com/photo-1605270160644-d52c6515c141?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center top / cover no-repeat;
+      url('https://images.unsplash.com/photo-1605270160644-d52c6515c141?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1100') center top / cover no-repeat;
     background-attachment:fixed;
     position:relative;
   }
@@ -247,6 +250,7 @@ function loadScriptFallback(fallbackSrc){
 
   .grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;}
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .grid2>*, .grid3>*, .grid4>*{min-width:0;max-width:100%;}
   .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
   @media(max-width:820px){.grid2{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} .grid4{grid-template-columns:1fr 1fr;}}
   @media(max-width:480px){.grid3{grid-template-columns:1fr;} .grid4{grid-template-columns:1fr;} .card.kpi{padding:16px;} .card.kpi .num{font-size:26px;}}
@@ -259,7 +263,7 @@ function loadScriptFallback(fallbackSrc){
     #contactDetailsModal .contact-modal-card{max-width:92vw;}
   }
 
-  .card{background-color:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow-sm);}
+  .card{background-color:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow-sm);overflow:hidden;max-width:100%;box-sizing:border-box;}
   .card h3{font-family:var(--font-display);font-size:16px;margin:0 0 14px;color:var(--ink);font-weight:600;}
 
   label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:14px 0 6px;font-family:var(--font-mono);letter-spacing:.01em;}
@@ -288,13 +292,28 @@ function loadScriptFallback(fallbackSrc){
   .bubble .meta{display:block;font-family:var(--font-mono);font-size:10.5px;font-weight:600;opacity:0.85;margin-top:4px;}
   .wa.ussd-style{background:#16241d;border-color:#1f3324;}
   #reportMap{height:240px;border-radius:8px;border:1px solid var(--line);}
+  .queue-map{height:320px;border-radius:10px;border:1px solid var(--line);margin-bottom:14px;}
+  .queue-map-toggle{padding:6px 11px;font-size:11.5px;}
+  /* The wrapper is the only element that scrolls horizontally. The table
+     just grows to the width its content needs, so touch drags always go to
+     one scroll container instead of being split between two. */
+  .table-scroll-wrap{overflow-x:scroll;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;touch-action:pan-x pan-y;}
+  .table-scroll-wrap table{display:table;overflow:visible;}
+  @media(max-width:760px){
+    /* A fixed pixel min-width forces overflow reliably on mobile browsers;
+       width:max-content gives inconsistent results in some table engines. */
+    .table-scroll-wrap table{min-width:920px;}
+    .table-scroll-wrap table th, .table-scroll-wrap table td{white-space:nowrap;}
+  }
   .leaflet-container{background:var(--basalt-2) !important;font-family:var(--font-body);}
 
   table{width:100%;border-collapse:collapse;font-size:13px;}
   @media(max-width:760px){
     table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;}
     table thead, table tbody{display:table;width:100%;table-layout:auto;}
+    .scroll-hint{display:block !important;}
   }
+  .scroll-hint{display:none;text-align:center;color:var(--ember);font-weight:600;margin:0 0 6px;}
   th{text-align:left;font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.05em;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--basalt-2);position:sticky;top:0;z-index:1;}
   td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink);}
   tr:last-child td{border-bottom:none;}
@@ -369,6 +388,16 @@ function loadScriptFallback(fallbackSrc){
   #repairCameraClose:hover{border-color:var(--ember);color:var(--ember);}
 
   #contactDetailsModal{position:fixed;inset:0;background:rgba(10,12,13,0.55);z-index:250;display:none;align-items:center;justify-content:center;padding:24px;}
+  #messageThreadModal{position:fixed;inset:0;background:rgba(10,12,13,0.55);z-index:250;display:none;align-items:center;justify-content:center;padding:24px;}
+  .msg-thread-card{display:flex;flex-direction:column;max-height:min(600px,80vh);}
+  .msg-thread-body{flex:1;overflow-y:auto;background:var(--basalt-2);border-radius:10px;padding:12px;margin:10px 0;min-height:160px;display:flex;flex-direction:column;gap:8px;}
+  .msg-bubble{max-width:80%;padding:8px 12px;border-radius:14px;font-size:13.5px;line-height:1.4;}
+  .msg-bubble.mine{align-self:flex-end;background:var(--ember);color:#fff;border-bottom-right-radius:3px;}
+  .msg-bubble.theirs{align-self:flex-start;background:#fff;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:3px;}
+  .msg-bubble time{display:block;font-size:10px;opacity:.72;margin-top:3px;font-family:var(--font-mono);}
+  .msg-thread-compose{display:flex;gap:8px;align-items:flex-end;}
+  .msg-thread-compose textarea{flex:1;min-height:40px;max-height:90px;resize:vertical;}
+  .msg-thread-empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 10px;}
   #contactDetailsModal .contact-modal-card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.28);border:1px solid var(--line);}
   #contactDetailsModal h3{font-family:var(--font-display);margin:0 0 12px;font-size:19px;}
   #reviewModal{position:fixed;inset:0;background:rgba(10,12,13,0.55);z-index:250;display:none;align-items:center;justify-content:center;padding:24px;}
@@ -433,7 +462,7 @@ function loadScriptFallback(fallbackSrc){
     flex:1 1 58%;min-width:320px;
     background:
       linear-gradient(180deg, rgba(243,247,244,.42) 0%, rgba(243,247,244,.58) 100%),
-      url('https://images.unsplash.com/photo-1773847469674-189153e5e32d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center 40% / cover no-repeat;
+      url('https://images.unsplash.com/photo-1773847469674-189153e5e32d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1100') center 40% / cover no-repeat;
     display:flex;align-items:flex-start;justify-content:center;
     padding:44px 28px;overflow-y:auto;
   }
@@ -578,7 +607,7 @@ function loadScriptFallback(fallbackSrc){
     max-width:none;margin:0;padding-left:0;padding-right:0;
     background:
       linear-gradient(180deg, rgba(243,247,244,.88) 0%, rgba(243,247,244,.94) 100%),
-      url('https://images.unsplash.com/photo-1758598497049-da3b63569529?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920') center 30% / cover no-repeat;
+      url('https://images.unsplash.com/photo-1758598497049-da3b63569529?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1100') center 30% / cover no-repeat;
   }
   .pub-page.active{display:block;}
   .pub-page h2{font-family:var(--font-display);font-size:26px;color:var(--ink);margin:0 0 10px;}
@@ -674,10 +703,10 @@ function loadScriptFallback(fallbackSrc){
   .home-intro{border-bottom:1px solid var(--line);}
   .home-process-grid article{background:#fff;border-color:#dce9e2;box-shadow:0 8px 24px rgba(22,83,55,.055);transition:transform .18s,box-shadow .18s;}.home-process-grid article:hover{transform:translateY(-4px);box-shadow:0 15px 30px rgba(22,83,55,.09);}
   .home-process-grid article{background-size:cover;background-position:center;}
-  .home-process-grid article:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
-  .home-process-grid article:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
-  .home-process-grid article:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
-  .home-process-grid article:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1200');}
+  .home-process-grid article:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  .home-process-grid article:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  .home-process-grid article:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  .home-process-grid article:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   .home-process-grid article>span{color:#14764d;}
   .home-process-grid h3, .home-process-grid p{text-shadow:0 1px 3px rgba(255,255,255,.55);}
   .process-icon{width:50px;height:50px;border-radius:15px;background:#e7f5ed;display:flex;align-items:center;justify-content:center;font-size:26px;color:#14764d;}
@@ -690,11 +719,11 @@ function loadScriptFallback(fallbackSrc){
   .who-card p{margin:7px 0 0;color:var(--ink-dim);font-size:12px;line-height:1.45;max-width:230px;}
   .who-card h4{margin-bottom:0;}
 
-  /* ---- Photography pass: hero + a few contextual section moments ---- */
+  /* ---- Photo backgrounds: hero and selected sections ---- */
   .home-hero{
     background:
       linear-gradient(100deg, rgba(9,26,19,0.72) 0%, rgba(9,28,20,0.52) 34%, rgba(9,28,20,0.22) 58%, rgba(9,28,20,0.08) 78%, rgba(9,28,20,0.1) 100%),
-      url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') center 42% / cover no-repeat;
+      url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1100') center 42% / cover no-repeat;
   }
   .home-hero::before{opacity:.22;mix-blend-mode:overlay;}
   .home-hero h1{color:#fff;}
@@ -712,7 +741,7 @@ function loadScriptFallback(fallbackSrc){
     position:relative;
     background:
       linear-gradient(180deg, rgba(8,20,15,0.55) 0%, rgba(12,45,30,0.62) 78%, rgba(15,111,71,0.72) 100%),
-      url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') center 30% / cover no-repeat;
+      url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1100') center 30% / cover no-repeat;
     max-width:none;padding:78px 40px 100px;border-radius:0;
   }
   .home-testimonials .section-kicker{color:#86efac;}
@@ -734,15 +763,14 @@ function loadScriptFallback(fallbackSrc){
   .pub-page-banner h2{position:relative;color:#fff;font-family:var(--font-display);font-size:30px;margin:6px 0 0;}
   @media(max-width:620px){.home-testimonials{padding:55px 20px;}.pub-page-banner{height:170px;padding:20px;}.pub-page-banner h2{font-size:23px;}}
 
-  /* ---- Dashboard KPI cards: contextual photo background, kept legible ---- */
+  /* ---- Dashboard KPI cards: photo background, kept legible ---- */
   .card.kpi{position:relative;overflow:hidden;border-color:rgba(255,255,255,.12);}
-  .card.kpi .num{position:relative;z-index:1;}
-  .card.kpi .label{position:relative;z-index:1;}
-  /* Any card.kpi that gets a themed photo flips to light-on-dark text, with a
-     small translucent chip behind the text so legibility never depends on how
-     bright that particular patch of photo happens to be. Photo + scrim are one
-     "background" shorthand directly on the card (no pseudo-elements) so the
-     card's own opaque background-color can never paint over/hide the photo. */
+  .card.kpi .num{position:relative;z-index:1;max-width:100%;overflow-wrap:break-word;}
+  .card.kpi .label{position:relative;z-index:1;max-width:100%;overflow-wrap:break-word;}
+  /* KPI cards with a photo background use light text on a small translucent
+     chip so the numbers stay readable over any part of the image. The photo
+     and gradient scrim share one background shorthand on the card itself
+     (no pseudo-elements), so the card's own background-color never covers it. */
   #tab-circular .card.kpi, #tab-recycler .card.kpi, #tab-repairershop .card.kpi,
   #tab-dashboard .kpi-zone-city .card.kpi, #tab-dashboard .kpi-zone-market .card.kpi{
     border-color:rgba(255,255,255,.14);
@@ -760,26 +788,37 @@ function loadScriptFallback(fallbackSrc){
     background:rgba(5,14,10,.55);padding:3px 9px;border-radius:6px;display:inline-block;margin-top:6px;
     backdrop-filter:blur(2px);
   }
-  #tab-circular .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
-  #kpiDonationsClaimedCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
-  #kpiItemsResoldCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 30%;}
-  #kpiItemsSoldDirectCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
-  #kpiEnergyCard.card.kpi, #kpiDisposalShareCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1770068511850-50f9bd0ad5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
-  #kpiAshCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1510251197878-a2e6d2cb590c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
-  #tab-recycler .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 35%;}
-  #tab-recycler .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
-  #tab-repairershop .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 30%;}
-  #tab-repairershop .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
-  #tab-dashboard .kpi-zone-city .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1645156568844-13cc8b4b1cf7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
-  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
-  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 50%;}
-  #tab-dashboard .kpi-zone-market .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 35%;}
-  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 45%;}
-  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1600');background-position:center 40%;}
+  #tab-circular .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 40%;}
+  /* On narrow screens the number and label badges stack as full-width,
+     wrapping blocks. As inline-blocks sized to their text they can grow
+     wider than the card and get clipped. */
+  @media(max-width:760px){
+    #tab-circular .card.kpi .num, #tab-recycler .card.kpi .num, #tab-repairershop .card.kpi .num,
+    #tab-dashboard .kpi-zone-city .card.kpi .num, #tab-dashboard .kpi-zone-market .card.kpi .num,
+    #tab-circular .card.kpi .label, #tab-recycler .card.kpi .label, #tab-repairershop .card.kpi .label,
+    #tab-dashboard .kpi-zone-city .card.kpi .label, #tab-dashboard .kpi-zone-market .card.kpi .label{
+      display:block;width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:break-word;
+    }
+  }
+  #kpiDonationsClaimedCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 45%;}
+  #kpiItemsResoldCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 30%;}
+  #kpiItemsSoldDirectCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 45%;}
+  #kpiEnergyCard.card.kpi, #kpiDisposalShareCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1770068511850-50f9bd0ad5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 50%;}
+  #kpiAshCard.card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.5) 0%, rgba(6,18,12,.3) 55%, rgba(6,18,12,.18) 100%), url('https://images.unsplash.com/photo-1510251197878-a2e6d2cb590c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 45%;}
+  #tab-recycler .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 35%;}
+  #tab-recycler .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 50%;}
+  #tab-repairershop .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 30%;}
+  #tab-repairershop .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 50%;}
+  #tab-dashboard .kpi-zone-city .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1645156568844-13cc8b4b1cf7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 45%;}
+  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 40%;}
+  #tab-dashboard .kpi-zone-city .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 50%;}
+  #tab-dashboard .kpi-zone-market .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 35%;}
+  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n+2){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 45%;}
+  #tab-dashboard .kpi-zone-market .card.kpi:nth-child(3n){background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 40%;}
 
 
 
-  /* ---- Light photo-wash for content/list/table cards that were plain white ---- */
+  /* ---- Light photo wash for content, list and table cards ---- */
   #opsQueueCard, #riskListCard, #topHotspotsCard, #criticalPointsCard,
   #circularBreakdownCard, #recyclerTableCard, #repairQueueList, #repairListedList,
   #usersListCard, #timeChartCard, #localityChartCard, #responseLocalityChartCard,
@@ -790,29 +829,28 @@ function loadScriptFallback(fallbackSrc){
     background-blend-mode:normal;
     background-size:cover;
     background-position:center;
+    background-color:var(--basalt-2);
   }
-  #opsQueueCard, #hazardByTypeCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1762805543693-5aaa00fadc28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #riskListCard, #topHotspotsCard, #criticalPointsCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #circularBreakdownCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #recyclerTableCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #recyclerOrgChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #repairQueueList, #repairListedList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #usersListCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  /* Table rows in photo-backed cards need their own solid backing, since
-     header cells already get one but body cells never did. */
+  #opsQueueCard, #hazardByTypeCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1762805543693-5aaa00fadc28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #riskListCard, #topHotspotsCard, #criticalPointsCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1761253469057-4a39359889f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #circularBreakdownCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #recyclerTableCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #recyclerOrgChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #repairQueueList, #repairListedList, #repairPickupList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #usersListCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  /* Table body cells get a solid backing so rows stay readable over the
+     card's photo; header cells have their own. */
   #opsQueueCard tbody tr td, #recyclerTableCard tbody tr td, #usersListCard tbody tr td{
     background:rgba(255,255,255,.86);
   }
   #opsQueueCard tbody tr:hover td, #recyclerTableCard tbody tr:hover td, #usersListCard tbody tr:hover td{
     background:rgba(255,255,255,.96);
   }
-  /* Same idea for the row-based lists (marketplace, hotspots, repair queue):
-     each row gets its own backing strip instead of relying on the card's
-     overall wash, which isn't always strong enough once the photo underneath
-     has a lot going on in it. */
+  /* Row-based lists (marketplace, hotspots, repair queue) get a backing
+     strip per row, since the card wash alone isn't enough over a busy photo. */
   #donationsList .risk-row, #directSaleList .risk-row, #forSaleList .risk-row,
   #riskListCard .risk-row, #topHotspotsCard .risk-row, #criticalPointsCard .risk-row,
-  #repairQueueList .risk-row, #repairListedList .risk-row,
+  #repairQueueList .risk-row, #repairListedList .risk-row, #repairPickupList .risk-row,
   #localityChartCard .risk-row, #responseLocalityChartCard .risk-row, #outcomeTypeChartCard .risk-row,
   #hazardByTypeCard .risk-row, #repairWorkloadChartCard .risk-row, #recycleWorkloadChartCard .risk-row, #recyclerOrgChartCard .risk-row{
     background:rgba(255,255,255,.82);border-radius:8px;padding:9px 10px;margin-bottom:4px;border-bottom:none;
@@ -820,27 +858,27 @@ function loadScriptFallback(fallbackSrc){
   #donationsList button.ghost, #directSaleList button.ghost, #forSaleList button.ghost{
     background:rgba(255,255,255,.9);
   }
-  #timeChartCard, #localityChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1524813686514-a57563d77965?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #responseLocalityChartCard, #outcomeTypeChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #diversionTrendChartCard, #reportersTrendChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #repairWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #recycleWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #timeChartCard, #localityChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1524813686514-a57563d77965?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #responseLocalityChartCard, #outcomeTypeChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #diversionTrendChartCard, #reportersTrendChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #repairWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #recycleWorkloadChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   .assist-link{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:18px;background:rgba(231,240,234,.75);color:var(--ink);text-decoration:none;font:600 12px var(--font-mono);margin:2px 4px 2px 0;}
   .assist-link:hover{border-color:var(--ink-dim);background:rgba(231,240,234,1);}
-  #assistedStatsCard{background-size:cover;background-position:center;background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1524813686514-a57563d77965?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #assistedStatsCard{background-size:cover;background-position:center;background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1524813686514-a57563d77965?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   #assistedStatsCard .risk-row{background:rgba(255,255,255,.82);border-radius:8px;padding:9px 10px;margin-bottom:4px;border-bottom:none;}
-  #aiAccuracyCard{background-size:cover;background-position:center;background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #aiAccuracyCard{background-size:cover;background-position:center;background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   #aiAccuracyCard tbody tr td{background:rgba(255,255,255,.86);}
-  #aqiCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #directSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #forSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1544691560-fc2053d97726?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #leaderboardCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #donationsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1786719664235-78cb91943275?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #myReportsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1625669981647-dc396c990a6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
-  #newReportCard, #reportSimulatorCard{background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920');}
+  #aqiCard{background-image:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)), url('https://images.unsplash.com/photo-1764954467652-973970e442a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #directSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1623503664086-475867ec20b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #forSaleList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1544691560-fc2053d97726?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #leaderboardCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1758599669406-d5179ccefcb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #donationsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1786719664235-78cb91943275?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #myReportsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1625669981647-dc396c990a6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
+  #newReportCard, #reportSimulatorCard{background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
 
-  /* Text on top of the light-wash cards above needs a bit more weight than
-     it does on plain white, since it's competing with a photo underneath. */
+  /* Scores and bar tracks on photo-wash cards use a stronger colour and a
+     lighter plate so they hold up against the image behind them. */
   #opsQueueCard .risk-score, #riskListCard .risk-score, #topHotspotsCard .risk-score,
   #criticalPointsCard .risk-score, #circularBreakdownCard .risk-score, #recyclerTableCard .risk-score,
   #timeChartCard .risk-score, #localityChartCard .risk-score, #responseLocalityChartCard .risk-score,
@@ -856,11 +894,10 @@ function loadScriptFallback(fallbackSrc){
     background:rgba(255,255,255,.78);
   }
 
-  /* Phone layout for the public pages. The page wrapper keeps 40px of side
-     padding, which on a 390px screen left the hero only ~270px to work with,
-     while the hero panel was sized from the screen width (~335px) and ran
-     off the right edge. Inner sections already carry their own side padding,
-     so the wrapper's is dropped here and the panel is sized from its container. */
+  /* Phone layout for the public pages. The page wrapper's 40px side padding
+     leaves only ~270px on a 390px screen, too narrow for the hero panel, so
+     the wrapper padding is dropped here (inner sections carry their own) and
+     the panel is sized from its container. */
   .hero-panel{max-width:100%;box-sizing:border-box;}
   .home-hero > *{min-width:0;}
   @media(max-width:620px){
@@ -979,7 +1016,7 @@ function loadScriptFallback(fallbackSrc){
   <section class="pub-page" id="pub-about">
     <div class="app" style="padding-top:44px;">
       <div class="pub-page-banner">
-        <img src="https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <img src="https://images.unsplash.com/flagged/photo-1574380555089-06f915e8c074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1400" alt="">
         <div><span data-i18n="about_kicker">ABOUT ORACLE NET</span><h2 data-i18n="about_title">A network built around people.</h2></div>
       </div>
       <p class="pub-lead" data-i18n="about_lead">Oracle Net is a community-driven circular waste platform. It connects citizens who have unwanted items with a marketplace and recovery network, while keeping municipal control focused on the streams that actually need intervention.</p>
@@ -999,7 +1036,7 @@ function loadScriptFallback(fallbackSrc){
   <section class="pub-page" id="pub-events">
     <div class="app" style="padding-top:44px;">
       <div class="pub-page-banner">
-        <img src="https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <img src="https://images.unsplash.com/photo-1659930087003-2d64e33181f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1400" alt="">
         <div><span data-i18n="events_kicker">EVENTS</span><h2 data-i18n="events_title">See the network in action.</h2></div>
       </div>
       <p class="pub-lead" data-i18n="events_lead">Community and program activities around Oracle Net.</p>
@@ -1015,7 +1052,7 @@ function loadScriptFallback(fallbackSrc){
   <section class="pub-page" id="pub-marketplace">
     <div class="app" style="padding-top:44px;">
       <div class="pub-page-banner">
-        <img src="https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <img src="https://images.unsplash.com/photo-1533692336500-b85cd007c172?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1400" alt="">
         <div><span data-i18n="pubmarket_kicker">ORACLE NET MARKETPLACE</span><h2 data-i18n="pubmarket_title">Give good items another owner.</h2></div>
       </div>
       <p class="pub-lead" data-i18n="pubmarket_lead">Free donations and citizen-direct sales are published here without waiting for municipal approval. Repaired items appear after a repairer completes the assigned job.</p>
@@ -1026,7 +1063,7 @@ function loadScriptFallback(fallbackSrc){
   <section class="pub-page" id="pub-donate">
     <div class="app" style="padding-top:44px;">
       <div class="pub-page-banner">
-        <img src="https://images.unsplash.com/photo-1758599668299-beebedfabf7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <img src="https://images.unsplash.com/photo-1758599668299-beebedfabf7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1400" alt="">
         <div><span data-i18n="donate_kicker">DONATE</span><h2 data-i18n="donate_title">Have an item someone else could use?</h2></div>
       </div>
       <div class="donate-hero">
@@ -1039,7 +1076,7 @@ function loadScriptFallback(fallbackSrc){
   <section class="pub-page" id="pub-contact">
     <div class="app" style="padding-top:44px;">
       <div class="pub-page-banner">
-        <img src="https://images.unsplash.com/photo-1758691736821-f1a600c0c3f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1920" alt="">
+        <img src="https://images.unsplash.com/photo-1758691736821-f1a600c0c3f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=1400" alt="">
         <div><span data-i18n="contact_kicker">CONTACT US</span><h2 data-i18n="contact_title">Let's talk.</h2></div>
       </div>
       <p class="pub-lead" data-i18n="contact_lead">Questions, partnerships, events or support, contact the Oracle Net team.</p>
@@ -1252,6 +1289,16 @@ function loadScriptFallback(fallbackSrc){
           <div id="notifList"></div>
         </div>
       </div>
+      <div class="notif-wrap">
+        <button class="ghost notif-bell" onclick="toggleMessagesPanel(event)" aria-label="Messages">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="msgBadge" class="notif-badge" style="display:none;">0</span>
+        </button>
+        <div id="msgPanel" class="notif-panel" style="display:none;">
+          <div class="notif-panel-head"><b data-i18n="msg_panel_title">Messages</b></div>
+          <div id="msgThreadsList"></div>
+        </div>
+      </div>
       <div class="role-badge"><span data-i18n="role_badge_prefix">Logged in as</span> <b id="roleLabel">-</b></div>
       <select class="lang-select" aria-label="Language">
         <option value="en">English</option>
@@ -1378,6 +1425,7 @@ function loadScriptFallback(fallbackSrc){
         <label for="locality" data-i18n="label_locality">Locality</label>
         <select id="locality"></select>
         <input type="text" id="localityOther" data-i18n-placeholder="placeholder_locality_other" placeholder="Type your exact location (e.g. street, landmark, neighbourhood)" style="display:none;margin-top:8px;">
+        <p class="small-note" id="localityOtherNote" style="display:none;margin:4px 0 0;" data-i18n="locality_other_note">The more specific you are here, street, landmark, nearby building, the more exact the pin on the collector's map will be, instead of just the centre of the area.</p>
         <p class="small-note" id="localityOperatorNote" style="margin:4px 0 0;"></p>
         <label data-i18n="label_waste_items">Waste items</label>
         <div id="wasteItemsContainer"></div>
@@ -1460,10 +1508,15 @@ function loadScriptFallback(fallbackSrc){
     <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 2.5V16h-7"/><circle cx="6" cy="18.2" r="1.5"/><circle cx="17" cy="18.2" r="1.5"/></svg></span><h2 class="sec-title" data-i18n="ops_title">Assignment Queue</h2></div>
     <p class="sec-desc" data-i18n="ops_desc">Assign only items that need repair, recycling or authorized final disposal.</p>
     <div class="card" id="opsQueueCard">
-      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:12px;cursor:pointer;">
-        <input type="checkbox" id="opsBulkyOnly" onchange="renderOps()" style="width:auto;"> <span data-i18n="ops_bulky_filter">Show bulky items only (need a dedicated pickup route)</span>
-      </label>
-      <div style="max-height:520px;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin:0;cursor:pointer;">
+          <input type="checkbox" id="opsBulkyOnly" onchange="renderOps()" style="width:auto;"> <span data-i18n="ops_bulky_filter">Show bulky items only (need a dedicated pickup route)</span>
+        </label>
+        <button type="button" class="ghost queue-map-toggle" onclick="toggleQueueMap('opsQueueMap', REPORTS.filter(r=>r.status!=='marketplace' && r.status!=='collected' && (!r.route||['repair','recycle','disposal'].includes(r.route))))" data-i18n="btn_show_map">Show on map</button>
+      </div>
+      <div id="opsQueueMapWrap" style="display:none;"><div id="opsQueueMap" class="queue-map"></div></div>
+      <p class="small-note scroll-hint" data-i18n="table_scroll_hint">← Swipe sideways to see every column →</p>
+      <div class="table-scroll-wrap" style="max-height:520px;">
         <table>
           <thead><tr><th data-i18n="th_id">ID</th><th data-i18n="th_photo">Photo</th><th data-i18n="th_locality">Locality</th><th data-i18n="th_type">Type</th><th data-i18n="th_condition">Condition</th><th data-i18n="th_points">Points</th><th data-i18n="th_status">Status</th><th data-i18n="th_route">Route</th><th data-i18n="th_reroute">Re-route</th><th></th></tr></thead>
           <tbody id="opsTable"></tbody>
@@ -1666,7 +1719,7 @@ function loadScriptFallback(fallbackSrc){
       </div>
       <div class="card" id="usersListCard">
         <h3 data-i18n="users_list_title">Existing users</h3>
-        <div style="max-height:400px;overflow-y:auto;">
+        <div class="table-scroll-wrap" style="max-height:400px;">
           <table>
             <thead><tr><th data-i18n="th_user">User</th><th data-i18n="th_role">Role</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
             <tbody id="usersTable"></tbody>
@@ -1719,7 +1772,9 @@ function loadScriptFallback(fallbackSrc){
           <option value="available" data-i18n="rec_view_available">Available to claim</option>
           <option value="mine" data-i18n="rec_view_mine">Claimed by me</option>
         </select>
+        <button type="button" class="ghost queue-map-toggle" onclick="toggleQueueMap('recyclerQueueMap', REPORTS.filter(r=>r.route==='recycle' && !r.recyclerConfirmed))" data-i18n="btn_show_map">Show on map</button>
       </div>
+      <div id="recyclerQueueMapWrap" style="display:none;"><div id="recyclerQueueMap" class="queue-map"></div></div>
       <table>
         <thead><tr><th data-i18n="th_id">ID</th><th data-i18n="th_photo">Photo</th><th data-i18n="th_locality">Locality</th><th data-i18n="th_material">Material</th><th data-i18n="th_condition">Condition</th><th data-i18n="th_status">Status</th><th></th></tr></thead>
         <tbody id="recyclerTable"></tbody>
@@ -1760,6 +1815,13 @@ function loadScriptFallback(fallbackSrc){
       <div class="card kpi"><span class="num" id="kpiRepairListed">0</span><span class="label" data-i18n="kpi_repair_listed">Listed for sale</span></div>
       <div class="card kpi"><span class="num" id="kpiRepairIncome">$0</span><span class="label" data-i18n="kpi_repair_income">Income earned (COP)</span></div>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:0 0 4px;">
+      <h3 style="font-family:var(--font-display);font-size:15px;color:var(--ink);margin:0;" data-i18n="repairershop_pickup_title">Needs pickup</h3>
+      <button type="button" class="ghost queue-map-toggle" onclick="toggleQueueMap('repairQueueMap', REPORTS.filter(r=>r.route==='repair' && !r.repairCollected))" data-i18n="btn_show_map">Show on map</button>
+    </div>
+    <p class="small-note" style="margin:0 0 8px;" data-i18n="repairershop_pickup_note">Go collect these from where they were originally reported, then confirm pickup here before repairing them.</p>
+    <div id="repairQueueMapWrap" style="display:none;"><div id="repairQueueMap" class="queue-map"></div></div>
+    <div class="card" id="repairPickupList" style="margin-bottom:24px;"></div>
     <h3 style="font-family:var(--font-display);font-size:15px;color:var(--ink);margin:0 0 4px;" data-i18n="repairershop_queue_title">Awaiting repair</h3>
     <div class="card" id="repairQueueList" style="margin-bottom:24px;"></div>
     <h3 style="font-family:var(--font-display);font-size:15px;color:var(--ink);margin:0 0 4px;" data-i18n="repairershop_listed_title">Your listings</h3>
@@ -1779,6 +1841,19 @@ function loadScriptFallback(fallbackSrc){
     <button id="contactDetailsClose" onclick="closeContactDetailsModal()" aria-label="Close">✕</button>
     <h3>Item &amp; contact details</h3>
     <div id="contactDetailsBody"></div>
+  </div>
+</div>
+
+<div id="messageThreadModal" onclick="if(event.target===this) closeMessageThread()">
+  <div class="contact-modal-card msg-thread-card">
+    <button onclick="closeMessageThread()" aria-label="Close">✕</button>
+    <h3 id="msgThreadTitle" data-i18n="msg_thread_title">Message</h3>
+    <p class="small-note" id="msgThreadSubtitle" style="margin:0 0 10px;"></p>
+    <div id="msgThreadBody" class="msg-thread-body"></div>
+    <div class="msg-thread-compose">
+      <textarea id="msgThreadInput" rows="2" maxlength="1000" data-i18n-placeholder="msg_placeholder" placeholder="Write a message..."></textarea>
+      <button type="button" class="primary" onclick="sendThreadMessage()" data-i18n="btn_send">Send</button>
+    </div>
   </div>
 </div>
 
@@ -1817,7 +1892,7 @@ const SUPABASE_EDGE_URL = "https://hifrlzicwboywlumyswe.supabase.co/functions/v1
 let BACKEND_ENABLED = SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
 const sb = BACKEND_ENABLED && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 if(BACKEND_ENABLED && !sb){
-  // SDK script didn't load - fall back to local demo data
+  // Supabase SDK failed to load; run on local demo data.
   BACKEND_ENABLED = false;
   console.warn("Oracle Net: Supabase SDK failed to load | running on local demo data only.");
 }
@@ -1846,8 +1921,6 @@ async function loadReportsFromBackend(retryCount){
 // page load.
 let reportsRequestSeq = 0;
 let reportsAppliedSeq = 0;
-// Checks people have made of the AI's classification. Admins get every row,
-// repairers and recyclers only their own (row-level security does the filtering).
 // Recycler organisations (public to any signed-in user; they're just names).
 let RECYCLER_ORGS = [];
 async function loadRecyclerOrgs(){
@@ -1860,6 +1933,8 @@ function orgName(id){
   const o = RECYCLER_ORGS.find(x => x.id === id);
   return o ? o.name : '';
 }
+// Checks people have made of the AI's classification. Admins get every row,
+// repairers and recyclers only their own (row-level security does the filtering).
 let REVIEWS = [];
 async function loadReviews(){
   if(!sb) return;
@@ -1913,11 +1988,65 @@ function toggleNotifPanel(event){
   if(opening) document.addEventListener('click', closeNotifPanelOnOutsideClick);
 }
 function closeNotifPanelOnOutsideClick(e){
-  const wrap = document.querySelector('.notif-wrap');
+  const panel = document.getElementById('notifPanel');
+  const wrap = panel ? panel.closest('.notif-wrap') : null;
   if(wrap && !wrap.contains(e.target)){
-    document.getElementById('notifPanel').style.display = 'none';
+    panel.style.display = 'none';
     document.removeEventListener('click', closeNotifPanelOnOutsideClick);
   }
+}
+// Messages panel: lists every conversation thread for the signed-in user,
+// so a conversation can be reopened without going back to the original
+// marketplace listing.
+let MESSAGE_THREADS = [];
+async function toggleMessagesPanel(event){
+  event.stopPropagation();
+  const panel = document.getElementById('msgPanel');
+  if(!panel) return;
+  const opening = panel.style.display === 'none';
+  panel.style.display = opening ? 'block' : 'none';
+  if(opening){
+    document.addEventListener('click', closeMessagesPanelOnOutsideClick);
+    await loadMessageThreads();
+  }
+}
+function closeMessagesPanelOnOutsideClick(e){
+  const panel = document.getElementById('msgPanel');
+  const wrap = panel ? panel.closest('.notif-wrap') : null;
+  if(wrap && !wrap.contains(e.target)){
+    panel.style.display = 'none';
+    document.removeEventListener('click', closeMessagesPanelOnOutsideClick);
+  }
+}
+async function loadMessageThreads(){
+  const list = document.getElementById('msgThreadsList');
+  if(!sb || !myUserId){ list.innerHTML = `<div class="notif-empty">${t('msg_signin_required')}</div>`; return; }
+  const { data, error } = await sb.rpc('get_my_message_threads');
+  if(error){ list.innerHTML = `<div class="notif-empty">${t('msg_load_failed')}</div>`; return; }
+  MESSAGE_THREADS = data || [];
+  renderMessageThreadsList();
+  renderMessageBadge();
+}
+function renderMessageThreadsList(){
+  const list = document.getElementById('msgThreadsList');
+  if(!list) return;
+  if(!MESSAGE_THREADS.length){
+    list.innerHTML = `<div class="notif-empty">${t('msg_no_threads')}</div>`;
+    return;
+  }
+  list.innerHTML = MESSAGE_THREADS.map(th => `
+    <button type="button" class="notif-row ${th.unread_count > 0 ? 'unread' : ''}" onclick="openMessageThread(${th.report_id}, '${th.other_user_id}', '${escapeHtml(th.other_name || '').replace(/'/g,"\\'")}')">
+      <div class="notif-row-title">${escapeHtml(th.other_name || t('reporter_unknown'))} &middot; ${escapeHtml(translateType(th.report_type))}</div>
+      <div class="notif-row-body">${escapeHtml(th.last_body)}</div>
+      <div class="notif-row-time">${notifTimeAgo(th.last_at)}</div>
+    </button>`).join('');
+}
+function renderMessageBadge(){
+  const badge = document.getElementById('msgBadge');
+  if(!badge) return;
+  const unread = MESSAGE_THREADS.reduce((a,t)=>a+(t.unread_count||0),0);
+  badge.style.display = unread > 0 ? 'inline-flex' : 'none';
+  badge.textContent = unread > 99 ? '99+' : String(unread);
 }
 async function markAllNotificationsRead(){
   NOTIFICATIONS.forEach(n => n.read = true);
@@ -1984,7 +2113,7 @@ async function saveReportToBackend(report){
     for(const src of sourcePhotos){
       uploadedUrls.push(await uploadPhotoToBackend(src, 'report'));
     }
-    const photo_url = uploadedUrls[0] || null; // kept for every existing single-thumbnail view
+    const photo_url = uploadedUrls[0] || null; // first photo, used by single-thumbnail views
     const { data, error } = await sb.from('reports').insert({
       citizen: report.citizen, locality: report.locality, locality_bucket: report.localityBucket,
       lat: report.lat, lon: report.lon, type: report.type, condition: report.condition,
@@ -2185,8 +2314,8 @@ async function renderUsersTable(){
     </tr>`).join('') || `<tr><td colspan="4" class="small-note">No users yet.</td></tr>`;
   renderOrgsList();
 }
-// The dropdown a recycler row uses to join (or leave) an organisation. Kept
-// small and inline rather than a modal, since this is a one-off admin task.
+// Dropdown on each recycler row for joining or leaving an organisation.
+// Inline instead of a modal since it's a quick admin action.
 function recyclerOrgControl(u){
   const options = RECYCLER_ORGS.map(o => `<option value="${o.id}" ${o.id === u.org_id ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('');
   return `<select class="rv-fix" style="margin-left:6px;max-width:170px;display:inline-block;" onchange="adminAssignOrg('${u.id}', this.value)">
@@ -2378,10 +2507,9 @@ function cpTagList(items){
   const tr = currentLang === 'es' ? (s)=>(CP_ES[s]||s) : (s)=>s;
   return '<div class="cp-tags">' + items.map(i=>`<span class="pill">${escapeHtml(tr(i))}</span>`).join('') + '</div>';
 }
-// Translation lookup for the free-text values inside CRITICAL_POINTS.Most
-// phrases repeat across the 14 points (waste types, zone conditions, actor
-// categories, intervention types), so a flat dictionary covers the field
-// content without duplicating all 14 records in a second language.
+// Spanish translations for the free-text values in CRITICAL_POINTS. Most
+// phrases repeat across the 14 points (waste types, zone conditions, actors,
+// interventions), so one flat dictionary covers them all.
 const CP_ES = {
   "Yes":"Sí", "No":"No", "Not reported":"No reportado", "Not quantified":"No cuantificado",
   "Yes - mainly vectors":"Sí - principalmente vectores", "Yes - flies and rodents":"Sí - moscas y roedores",
@@ -2624,12 +2752,10 @@ const TYPE_RULES = [
   {kw:["box","boxes","caja","cajas","carton","cartons"], type:"Boxes / Packaging", effort:5, recyclable:true, bulky:false},
 ];
 
-// Report "type" strings (Sofa / Upholstered furniture, Mattress, etc) are
-// the canonical English names used throughout the logic above, so they are
-// translated for display only, right here, rather than storing a localized
-// copy anywhere. Anything the AI returns that isn't in this list (a specific
-// object name it invented) is shown exactly as the AI wrote it, in whichever
-// language it answered in.
+// Report type strings (Mattress, Sofa / Upholstered furniture, etc.) are the
+// canonical English names used in the logic above, so they're translated at
+// display time only. Any type the AI returns that isn't listed here is shown
+// exactly as the AI wrote it.
 const TYPE_TRANSLATIONS_ES = {
   "Air Conditioner":"Aire acondicionado", "Appliance":"Electrodoméstico", "Bag / Backpack":"Bolso / Mochila",
   "Bed frame":"Base de cama", "Bicycle":"Bicicleta", "Boxes / Packaging":"Cajas / Embalaje", "Cabinet":"Gabinete",
@@ -2735,8 +2861,9 @@ let pointsLedger = {}; // citizenName -> points
 const CITIZENS = ["Camila R.","Andrés G.","Valentina P.","Julián M.","Daniela S.","Santiago V.","Laura T.","Mateo H."];
 let currentCitizenName = "You"; // set at login from the name field; default matches the "You" label
 let myUserId = null; // the logged-in Supabase auth user's id, used to recognize our own reports in the Realtime feed
-let pendingLoginRole = null; // holds the role while the name-safety-net modal is up, then setRole() runs once a name is saved
+let pendingLoginRole = null; // role waiting on the name prompt; setRole() runs once a name is saved
 let pendingMarketplaceAction = null; // {id, action} set when a signed-out visitor clicks Buy/Claim on the public marketplace
+let pendingMessageAction = null; // {reportId, otherUserId, otherName, itemLabel} set when a signed-out visitor clicks Message
 let displayNameById = {}; // account id -> current display name, kept fresh via the profiles-live subscription
 async function loadDisplayNames(){
   if(!sb) return;
@@ -2807,9 +2934,8 @@ function decideRoute(rule, condition, citizenWantsSale){
 
 function determineAutoRoute(r){
   if(r.flaggedHazard) return 'disposal';
-  // Mixed household waste in bags isn't reusable or repairable, whatever
-  // condition the AI happens to guess, so it skips straight to disposal
-  // rather than following the condition-based routing used for actual items.
+  // Bagged household waste isn't reusable or repairable whatever condition the
+  // AI guesses, so it goes straight to disposal instead of condition-based routing.
   if(r.type === 'Household waste (bagged)') return 'disposal';
   if(r.condition === 'fair') return 'repair';
   const rule = TYPE_RULES.find(rule=>rule.type === r.type);
@@ -2862,9 +2988,9 @@ async function restoreSessionIfAny(session){
 }
 function subscribeToBackendChanges(){
   if(!sb) return;
-  // Tear down any previous channels first: this gets called again on every
-  // sign-in/out, and Supabase will happily leave old subscriptions running
-  // (and double-firing) if we don't clean up before opening new ones.
+  // Remove existing channels first. This runs on every sign-in/out, and old
+  // subscriptions keep running (and double-firing) unless they're cleaned up
+  // before new ones open.
   if(reportsChannel) sb.removeChannel(reportsChannel);
   if(profilesChannel) sb.removeChannel(profilesChannel);
   reportsChannel = sb.channel('reports-live')
@@ -2984,6 +3110,10 @@ function mapBackendRow(row){
     aiHazard: row.ai_hazard === null || row.ai_hazard === undefined ? null : !!row.ai_hazard,
     aiConfOriginal: row.ai_conf_original === null || row.ai_conf_original === undefined ? null : Number(row.ai_conf_original),
     handledBy: row.handled_by,
+    recycleHelperName: row.recycle_helper_name || null,
+    repairCollected: !!row.repair_collected,
+    repairPickupClaimedBy: row.repair_pickup_claimed_by,
+    repairPickupClaimedAt: row.repair_pickup_claimed_at ? new Date(row.repair_pickup_claimed_at).getTime() : null,
     collectedAt: row.collected_at ? new Date(row.collected_at).getTime() : null,
     hasPhoto: !!row.photo_url,
     classifiedBy: row.classified_by,
@@ -3195,12 +3325,14 @@ function renderStackedBarList(containerId, rows, seriesMeta){
 const TRANSLATIONS = {
 en: {
   hero_eyebrow:"Challenge 6 · Bogotá Bulky Waste Governance",
-  // Public marketing site strings (nav + all 6 pages), grouped here together
-  // since they share no keys with the signed-in app above them.
+  // Public marketing site strings (nav and all six pages).
   nav_home:"Home", nav_about:"About", nav_events:"Events", nav_donate:"Donate", nav_contact:"Contact Us", nav_sign_in:"Sign in",
   install_title:"Install Oracle Net", install_btn:"Install",
   install_body_android:"Add it to your home screen for one-tap access, even with a weak connection.",
   install_body_ios:"Tap the Share icon, then \"Add to Home Screen\", for one-tap access any time.",
+  msg_thread_title:"Message", msg_placeholder:"Write a message...", btn_send:"Send", msg_empty:"No messages yet. Say hello.",
+  toast_signin_to_message:"Sign in as a citizen to send a message.", msg_load_error:"Could not load this conversation.", msg_send_error:"Message could not be sent, please try again.",
+  btn_message_seller:"Message seller", btn_message_donor:"Message donor", btn_message_repairer:"Message repairer",
   nav_marketplace_upper:"MARKETPLACE", nav_contact_label:"Contact",
   home_eyebrow:"ORACLE NET · BOGOTÁ", home_hero_title_line1:"Give every item", home_hero_title_line2:"a better next life.",
   home_hero_sub:"Report bulky waste, identify the item, and connect it with the right reuse or recovery path.",
@@ -3297,6 +3429,7 @@ en: {
   municipal_cost_note:"110 hotline: 1 to 7 sacks free, more is quoted (COP 95,000 to 250,000 typical). Ecopuntos are free but move daily, and hauling to one yourself runs about COP 130,000.",
   report_new_title:"New report", word_you:"You",
   label_locality:"Locality", opt_other:"Other (type exact location)",
+  locality_other_note:"The more specific you are here, street, landmark, nearby building, the more exact the pin on the collector's map will be, instead of just the centre of the area.",
   placeholder_locality_other:"Type your exact location (e.g. street, landmark, neighbourhood)",
  placeholder_description:"Optional | e.g. Old mattress and a broken wardrobe left on the sidewalk near the park. A photo alone is enough.",
  btn_capture:"Capture", btn_cancel:"Cancel",
@@ -3314,6 +3447,7 @@ en: {
   trust_verified_note:"Inspected and repaired by a partner cooperative before resale.",
   report_map_title:"Where the AI pinned your report",
   map_precise_caption:"Exact address geocoded via OpenStreetMap", map_approx_caption:"Approximate | placed at the centre of",
+  btn_show_map:"Show on map", map_get_directions:"Get directions", table_scroll_hint:"\u2190 Swipe sideways to see every column \u2192",
   report_channel_title:"Reporting channel simulator",
   wa_greeting:"👋 Hi, this is Chatico, Bogotá's WhatsApp assistant. Send a photo + short description of any bulky waste (furniture, mattress, debris) and your location to report it.",
   ussd_greeting:"195 · WASTE LINE | Option 8: illegal dumping / accumulation\n1. Report new dumping point\n2. Check report status\n0. Exit\nRouted to Aguas de Bogotá for the operator serving your locality.",
@@ -3334,6 +3468,7 @@ en: {
   btn_view_reporter:"Who reported this", loading_ellipsis:"Loading...",
   reporter_unavailable_demo:"Reporter details are unavailable in local demo mode.", reporter_unavailable:"Reporter details are not available for this item.",
   reporter_name_label:"Reported by:", reporter_email_label:"Email:", reporter_note_label:"Their note:", reporter_unknown:"Not available", reporter_no_note:"No note left.",
+  msg_load_failed:"Could not load messages right now.", msg_panel_title:"Messages", msg_signin_required:"Sign in to see your messages.", msg_no_threads:"No conversations yet.",
   marketplace_title:"Marketplace", marketplace_desc:"Claim free donations or buy repaired items cheap.",
   marketplace_donations_title:"Free donations",
   marketplace_directsale_title:"Sold directly by citizens",
@@ -3341,6 +3476,10 @@ en: {
   repairershop_title:"Repair Shop",
   kpi_repair_awaiting:"Awaiting repair", kpi_repair_listed:"Listed for sale", kpi_repair_income:"Income earned (COP)",
   repairershop_queue_title:"Awaiting repair", repairershop_listed_title:"Your listings",
+  repairershop_pickup_title:"Needs pickup", repairershop_pickup_note:"Go collect these from where they were originally reported, then confirm pickup here before repairing them.",
+  empty_repair_pickup:"Nothing needs picking up right now.", toast_repair_pickup_confirmed:"Pickup confirmed. You can now repair and list this item.",
+  prompt_pickup_helper:"Sending someone else to collect this? Enter their name (optional, leave blank if you're going yourself):",
+  pickup_helper_prefix:"collected by",
   btn_claim:"Claim", btn_buy:"Buy", btn_mark_repaired:"Mark repaired & list", placeholder_price:"e.g. 35000",
   placeholder_repairer_name:"Your name / shop name", placeholder_repairer_phone:"Contact (phone / WhatsApp)", placeholder_repairer_address:"Pickup address",
   toast_repairer_contact_missing:"Add your name, contact and pickup address so buyers can reach you.",
@@ -3377,7 +3516,7 @@ en: {
   btn_take_photo_short:"📷 Take photo", btn_upload_photo:"📤 Upload",
   flow_repair_title:"Repairable", flow_repair_desc:"Fair-condition items → sent to repairers, fixed, and resold to citizens as affordable second-hand goods.",
   kpi_donations_claimed:"Donations claimed", kpi_items_resold:"Items resold via repair", kpi_items_sold_direct:"Sold directly by citizens", kpi_disposal_share:"Share sent to final disposal (last resort)",
-  btn_mark_collected:"ASSIGN", ops_count_suffix:"items requiring municipal assignment.", route_unset:"- Not yet routed -", label_hazard:"Hazard", label_bulky:"Bulky", label_bulky_tip:"Oversized item, needs a dedicated bulky-waste pickup, not the regular curbside route.", label_needs_review:"Needs review", ops_needs_review_suffix:"need review", toast_type_corrected:"Type corrected for", toast_ai_unavailable:"AI classification unavailable right now | used a basic guess instead. An admin can still correct the type later.", toast_save_failed:"Could not save your report | please check your connection and try again.", nameSetup_title:"What should we call you?", btn_save_name:"Save and continue",
+  btn_mark_collected:"ASSIGN", ops_count_suffix:"items requiring municipal assignment.", route_unset:"- Not yet routed -", route_locked:"Locked", route_locked_note:"Already confirmed by the recycler, repairer, or collection crew, so the route can no longer be changed.", label_hazard:"Hazard", label_bulky:"Bulky", label_bulky_tip:"Oversized item, needs a dedicated bulky-waste pickup, not the regular curbside route.", label_needs_review:"Needs review", ops_needs_review_suffix:"need review", toast_type_corrected:"Type corrected for", toast_ai_unavailable:"AI classification unavailable right now | used a basic guess instead. An admin can still correct the type later.", toast_save_failed:"Could not save your report | please check your connection and try again.", nameSetup_title:"What should we call you?", btn_save_name:"Save and continue",
 
   hotspots_title:"Hotspot Prediction",
   hotspots_desc:"Scored from recent report frequency and local context.",
@@ -3429,7 +3568,7 @@ en: {
   placeholder_recycler_value:"Value collected (COP)", toast_recycler_value_missing:"Enter the value of the material before confirming.",
   btn_confirm_pickup:"Confirm pickup", status_awaiting:"awaiting pickup", status_confirmed:"confirmed",
   toast_pickup_confirmed:"Pickup confirmed for",
-  status_pending:"pending", status_collected:"assigned", status_marketplace:"marketplace",
+  status_pending:"pending", status_collected:"collected", status_marketplace:"marketplace",
   footer_text:"ORACLE NET PROTOTYPE | Item classification uses a vision AI model, hotspot scores are rule-based, and air quality and the reporting channels are simulated."
 },
 es: {
@@ -3438,6 +3577,9 @@ es: {
   install_title:"Instala Oracle Net", install_btn:"Instalar",
   install_body_android:"Agrégala a tu pantalla de inicio para acceso con un toque, incluso con conexión débil.",
   install_body_ios:"Toca el ícono de Compartir y luego \"Agregar a pantalla de inicio\" para acceso con un toque.",
+  msg_thread_title:"Mensaje", msg_placeholder:"Escribe un mensaje...", btn_send:"Enviar", msg_empty:"Aún no hay mensajes. Saluda.",
+  toast_signin_to_message:"Inicia sesión como ciudadano para enviar un mensaje.", msg_load_error:"No se pudo cargar esta conversación.", msg_send_error:"No se pudo enviar el mensaje, inténtalo de nuevo.",
+  btn_message_seller:"Mensaje al vendedor", btn_message_donor:"Mensaje al donante", btn_message_repairer:"Mensaje al reparador",
   nav_marketplace_upper:"MERCADO", nav_contact_label:"Contacto",
   home_eyebrow:"ORACLE NET · BOGOTÁ", home_hero_title_line1:"Dale a cada objeto", home_hero_title_line2:"una mejor próxima vida.",
   home_hero_sub:"Reporta residuos voluminosos, identifica el objeto y conéctalo con la ruta de reúso o recuperación correcta.",
@@ -3534,6 +3676,7 @@ es: {
   municipal_cost_note:"Línea 110: de 1 a 7 lonas gratis, más se cotiza (COP 95.000 a 250.000 aprox). Los Ecopuntos son gratis pero cambian de lugar cada día, y llevar el objeto tú mismo cuesta unos COP 130.000.",
   report_new_title:"Nuevo reporte", word_you:"Tú",
   label_locality:"Localidad", opt_other:"Otra (escribe la ubicación exacta)",
+  locality_other_note:"Mientras más específico seas aquí, calle, punto de referencia, edificio cercano, más exacto será el punto en el mapa del recolector, en lugar de solo el centro de la zona.",
   placeholder_locality_other:"Escribe tu ubicación exacta (ej. calle, punto de referencia, barrio)",
  placeholder_description:"Opcional | ej. Colchón viejo y armario roto dejados en la acera cerca del parque. Una foto sola es suficiente.",
  btn_capture:"Capturar", btn_cancel:"Cancelar",
@@ -3551,6 +3694,7 @@ es: {
   trust_verified_note:"Inspeccionado y reparado por una cooperativa aliada antes de la reventa.",
   report_map_title:"Dónde ubicó la IA tu reporte",
   map_precise_caption:"Dirección exacta geocodificada vía OpenStreetMap", map_approx_caption:"Aproximado | ubicado en el centro de",
+  btn_show_map:"Ver en el mapa", map_get_directions:"Cómo llegar", table_scroll_hint:"\u2190 Desliza hacia los lados para ver cada columna \u2192",
   report_channel_title:"Simulador del canal de reporte",
   wa_greeting:"👋 ¡Hola! Soy Chatico, el asistente de WhatsApp de Bogotá. Envía una foto + breve descripción de cualquier residuo voluminoso (muebles, colchón, escombros) y tu ubicación para reportarlo.",
   ussd_greeting:"195 · LÍNEA DE ASEO | Opción 8: escombros / acumulación ilegal\n1. Reportar nuevo punto de arrojo\n2. Consultar estado del reporte\n0. Salir\nSe enruta a Aguas de Bogotá según el operador de tu localidad.",
@@ -3571,6 +3715,7 @@ es: {
   btn_view_reporter:"Quién reportó esto", loading_ellipsis:"Cargando...",
   reporter_unavailable_demo:"Los detalles del reportante no están disponibles en modo de demostración local.", reporter_unavailable:"Los detalles del reportante no están disponibles para este objeto.",
   reporter_name_label:"Reportado por:", reporter_email_label:"Correo:", reporter_note_label:"Su nota:", reporter_unknown:"No disponible", reporter_no_note:"No dejó ninguna nota.",
+  msg_load_failed:"No se pudieron cargar los mensajes.", msg_panel_title:"Mensajes", msg_signin_required:"Inicia sesión para ver tus mensajes.", msg_no_threads:"Aún no hay conversaciones.",
   marketplace_title:"Mercado", marketplace_desc:"Reclama donaciones gratis o compra objetos reparados baratos.",
   marketplace_donations_title:"Donaciones gratuitas",
   marketplace_directsale_title:"Vendido directamente por ciudadanos",
@@ -3578,6 +3723,10 @@ es: {
   repairershop_title:"Taller de Reparación",
   kpi_repair_awaiting:"Pendientes de reparar", kpi_repair_listed:"Publicados en venta", kpi_repair_income:"Ingresos generados (COP)",
   repairershop_queue_title:"Pendientes de reparar", repairershop_listed_title:"Tus publicaciones",
+  repairershop_pickup_title:"Necesitan recolección", repairershop_pickup_note:"Ve a recogerlos de donde fueron reportados originalmente, luego confirma la recolección aquí antes de repararlos.",
+  empty_repair_pickup:"No hay nada que recoger por ahora.", toast_repair_pickup_confirmed:"Recolección confirmada. Ahora puedes reparar y publicar este objeto.",
+  prompt_pickup_helper:"¿Vas a enviar a alguien más a recoger esto? Escribe su nombre (opcional, déjalo en blanco si irás tú mismo):",
+  pickup_helper_prefix:"recogido por",
   btn_claim:"Reclamar", btn_buy:"Comprar", btn_mark_repaired:"Marcar reparado y publicar", placeholder_price:"ej. 35000",
   placeholder_repairer_name:"Tu nombre / taller", placeholder_repairer_phone:"Contacto (teléfono / WhatsApp)", placeholder_repairer_address:"Dirección de recogida",
   toast_repairer_contact_missing:"Agrega tu nombre, contacto y dirección de recogida para que los compradores puedan contactarte.",
@@ -3614,7 +3763,7 @@ es: {
   btn_take_photo_short:"📷 Tomar foto", btn_upload_photo:"📤 Subir",
   flow_repair_title:"Reparable", flow_repair_desc:"Objetos en estado regular → enviados a reparadores, arreglados y revendidos a ciudadanos como productos usados asequibles.",
   kpi_donations_claimed:"Donaciones reclamadas", kpi_items_resold:"Objetos revendidos vía reparación", kpi_items_sold_direct:"Vendido directamente por ciudadanos", kpi_disposal_share:"Porcentaje enviado a disposición final (último recurso)",
-  btn_mark_collected:"Marcar recolectado", ops_count_suffix:"reportes totales en la cola.", route_unset:"- Sin ruta asignada -", label_hazard:"Peligro", label_bulky:"Voluminoso", label_bulky_tip:"Objeto de gran tamaño: necesita recolección especial, no la ruta regular de recolección.", label_needs_review:"Necesita revisión", ops_needs_review_suffix:"necesitan revisión", toast_type_corrected:"Tipo corregido para", toast_ai_unavailable:"Clasificación por IA no disponible | se usó una estimación básica. Un administrador puede corregir el tipo después.", toast_save_failed:"No se pudo guardar tu reporte | revisa tu conexión e inténtalo de nuevo.", nameSetup_title:"¿Cómo te llamamos?", btn_save_name:"Guardar y continuar",
+  btn_mark_collected:"Marcar recolectado", ops_count_suffix:"reportes totales en la cola.", route_unset:"- Sin ruta asignada -", route_locked:"Bloqueado", route_locked_note:"Ya confirmado por el reciclador, reparador o equipo de recolección, así que la ruta ya no se puede cambiar.", label_hazard:"Peligro", label_bulky:"Voluminoso", label_bulky_tip:"Objeto de gran tamaño: necesita recolección especial, no la ruta regular de recolección.", label_needs_review:"Necesita revisión", ops_needs_review_suffix:"necesitan revisión", toast_type_corrected:"Tipo corregido para", toast_ai_unavailable:"Clasificación por IA no disponible | se usó una estimación básica. Un administrador puede corregir el tipo después.", toast_save_failed:"No se pudo guardar tu reporte | revisa tu conexión e inténtalo de nuevo.", nameSetup_title:"¿Cómo te llamamos?", btn_save_name:"Guardar y continuar",
 
   hotspots_title:"Predicción de Puntos Críticos",
   hotspots_desc:"Puntuado según la frecuencia reciente de reportes y el contexto local.",
@@ -3927,8 +4076,8 @@ async function attemptLogin(){
   }
 
   errEl.textContent = '';
-  // Now that we're signed in the full report list is visible to us, so load
-  // it (and the display names for the leaderboard) before drawing the dashboard.
+  // Signed in, so the full report list is visible: load it (and the display
+  // names for the leaderboard) before drawing the dashboard.
   if(BACKEND_ENABLED){
     await Promise.all([refreshReportsFromBackend(), loadDisplayNames()]);
   }
@@ -3963,6 +4112,11 @@ function setRole(role){
     const { id, action } = pendingMarketplaceAction;
     pendingMarketplaceAction = null;
     if(action === 'buy') buyItem(id); else claimDonation(id);
+  }
+  if(role === 'citizen' && pendingMessageAction){
+    const { reportId, otherUserId, otherName, itemLabel } = pendingMessageAction;
+    pendingMessageAction = null;
+    openMessageThread(reportId, otherUserId, otherName, itemLabel);
   }
 }
 function showGate(loggedOutByTimeout){
@@ -4047,7 +4201,7 @@ function renderPublicMarketplace(){
   const ICON_REPAIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>';
   const ICON_SELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
   const ICON_DONATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8c-1.5-3-5-4-5-1.3C7 8 9 8 12 8z"/><path d="M12 8c1.5-3 5-4 5-1.3C17 8 15 8 12 8z"/></svg>';
-  const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||t('pubmarket_item_default_desc'),price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0])}));
+  const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||t('pubmarket_item_default_desc'),price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0]),ownerId:r.route==='repair'?r.handledBy:r.reportedBy}));
   grid.innerHTML = items.map(item=>{
     const actionLabel = item.route === 'reuse' ? t('pubmarket_claim_it') : t('pubmarket_buy_it');
     const actionCall = item.route === 'reuse' ? `publicBuyOrClaim(${item.id},'claim')` : `publicBuyOrClaim(${item.id},'buy')`;
@@ -4056,8 +4210,12 @@ function renderPublicMarketplace(){
     const priceLabel = item.route==='reuse' ? t('pubmarket_free')
       : item.route==='sell' ? (t('pubmarket_for_sale') + (item.price ? ' · $'+Number(item.price).toLocaleString('en-US')+' COP' : ''))
       : (item.price ? '$'+Number(item.price).toLocaleString('en-US')+' COP' : '');
-    const detailsLabel = item.route==='repair' ? t('pubmarket_contact_repairer') : t('pubmarket_view_details');
-    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="ghost" style="flex:1;" onclick="openMarketplaceDetails(${item.id})">${detailsLabel}</button><button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
+    const messageLabel = item.route==='repair' ? t('btn_message_repairer') : item.route==='reuse' ? t('btn_message_donor') : t('btn_message_seller');
+    const itemLabelText = typeLabel.replace(/"/g, '&quot;');
+    const messageBtn = item.ownerId
+      ? `<button type="button" class="ghost" style="flex:1;" onclick="openMessageThread(${item.id}, '${item.ownerId}', null, '${itemLabelText}')">${messageLabel}</button>`
+      : '';
+    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;">${messageBtn}<button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
   }).join('');
 }
 
@@ -4087,9 +4245,9 @@ async function openMarketplaceDetails(reportId){
     <p style="margin:6px 0;"><b>Pickup address:</b> ${escapeHtml(d.exact_address || 'Not provided')}</p>
   `;
 }
-// The admin/repairer/recycler equivalent of openMarketplaceDetails above:
-// who reported this item and how to reach them, for actually finding and
-// collecting it, not for a marketplace exchange.
+// Admin/repairer/recycler counterpart to openMarketplaceDetails: shows who
+// reported the item and how to reach them, for finding and collecting it
+// (not for a marketplace exchange).
 async function openReporterDetails(reportId){
   const modal = document.getElementById('contactDetailsModal');
   const body = document.getElementById('contactDetailsBody');
@@ -4115,6 +4273,72 @@ async function openReporterDetails(reportId){
 function closeContactDetailsModal(){
   const modal = document.getElementById('contactDetailsModal');
   if(modal) modal.style.display = 'none';
+}
+
+
+// Marketplace messaging: a potential buyer can ask a seller, donor or
+// repairer about an item before anything is agreed, so phone numbers and
+// addresses aren't shown to everyone who clicks through. Exact contact
+// details are revealed through the contact-details modal once an item is
+// reserved, since that step is about coordinating a real pickup.
+let activeMsgThread = null; // { reportId, otherUserId }
+function msgTimeLabel(iso){
+  const d = new Date(iso);
+  return d.toLocaleString(currentLang === 'es' ? 'es-CO' : 'en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function renderThreadMessages(messages){
+  const body = document.getElementById('msgThreadBody');
+  if(!messages.length){
+    body.innerHTML = `<div class="msg-thread-empty">${t('msg_empty')}</div>`;
+    return;
+  }
+  body.innerHTML = messages.map(m => {
+    const mine = m.sender_id === myUserId;
+    return `<div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${escapeHtml(m.body)}<time>${msgTimeLabel(m.created_at)}</time></div>`;
+  }).join('');
+  body.scrollTop = body.scrollHeight;
+}
+async function openMessageThread(reportId, otherUserId, otherName, itemLabel){
+  if(!myUserId){
+    pendingMessageAction = { reportId, otherUserId, otherName, itemLabel };
+    toast(t('toast_signin_to_message'));
+    document.getElementById('publicSite').style.display = 'none';
+    showGate();
+    selectGateRole('citizen');
+    return;
+  }
+  if(!sb) return;
+  activeMsgThread = { reportId, otherUserId };
+  document.getElementById('msgThreadTitle').textContent = t('msg_thread_title') + ' ' + (otherName || '');
+  document.getElementById('msgThreadSubtitle').textContent = itemLabel || '';
+  document.getElementById('msgThreadInput').value = '';
+  document.getElementById('msgThreadBody').innerHTML = `<div class="msg-thread-empty">${t('loading_ellipsis')}</div>`;
+  document.getElementById('messageThreadModal').style.display = 'flex';
+  const { data, error } = await sb.rpc('get_thread_messages', { p_report_id: reportId, p_other_user_id: otherUserId });
+  if(error){ document.getElementById('msgThreadBody').innerHTML = `<div class="msg-thread-empty">${t('msg_load_error')}</div>`; return; }
+  renderThreadMessages(data || []);
+  // Refresh the thread list so the unread badge updates right away, even when
+  // the thread was opened from a marketplace listing instead of the panel.
+  sb.rpc('mark_thread_read', { p_report_id: reportId, p_other_user_id: otherUserId })
+    .then(()=>loadMessageThreads())
+    .catch(()=>{});
+}
+function closeMessageThread(){
+  document.getElementById('messageThreadModal').style.display = 'none';
+  activeMsgThread = null;
+}
+async function sendThreadMessage(){
+  if(!activeMsgThread || !sb) return;
+  const input = document.getElementById('msgThreadInput');
+  const body = input.value.trim();
+  if(!body) return;
+  input.value = '';
+  input.disabled = true;
+  const { error } = await sb.rpc('send_report_message', { p_report_id: activeMsgThread.reportId, p_recipient_id: activeMsgThread.otherUserId, p_body: body });
+  input.disabled = false;
+  if(error){ toast(error.message || t('msg_send_error')); input.value = body; return; }
+  const { data } = await sb.rpc('get_thread_messages', { p_report_id: activeMsgThread.reportId, p_other_user_id: activeMsgThread.otherUserId });
+  renderThreadMessages(data || []);
 }
 
 function enterPortal(){
@@ -4200,6 +4424,8 @@ localitySelect.appendChild(otherOpt);
 localitySelect.addEventListener('change', ()=>{
   const isOther = localitySelect.value === '__other__';
   localityOtherInput.style.display = isOther ? 'block' : 'none';
+  const otherNote = document.getElementById('localityOtherNote');
+  if(otherNote) otherNote.style.display = isOther ? 'block' : 'none';
   if(isOther) localityOtherInput.focus();
   updateLocalityOperatorNote();
 });
@@ -4559,10 +4785,9 @@ renderChannelGreeting();
 });
 
 
-// Radios don't normally let you uncheck the one already selected, but
-// someone can easily pick Donate or Sell by mistake and want out entirely
-// rather than being forced into the other option, so a second click on the
-// already-checked one clears it.
+// Radios can't normally be unchecked once selected. A second click on the
+// already-checked Donate or Sell option clears it, so someone who picked one
+// by mistake isn't forced into the other.
 function deselectMarketChoiceIfAlreadyChecked(el){
   if(el.dataset.wasChecked === 'true'){
     el.checked = false;
@@ -4767,6 +4992,8 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
     }finally{
       localityOtherInput.value = '';
       localityOtherInput.style.display = 'none';
+      const otherNoteReset = document.getElementById('localityOtherNote');
+      if(otherNoteReset) otherNoteReset.style.display = 'none';
       localitySelect.value = LOCALITIES[0];
       wasteItems = [{ desc:'', photos: [] }];
       renderWasteItemRows();
@@ -4792,13 +5019,19 @@ async function assignReport(id){
   const r = REPORTS.find(r=>r.id===id);
   if(!r || r.status==='marketplace') return;
   const route = determineAutoRoute(r);
-  const prevStatus = r.status, prevRoute = r.route, prevPrice = r.price;
+  const prevStatus = r.status, prevRoute = r.route, prevPrice = r.price, prevCollectedAt = r.collectedAt;
   r.route = route;
-  r.status = 'collected';
-  r.collectedAt = Date.now();
+  // Repair and recycle items are collected by the repairer/recycler
+  // themselves, so assigning the route doesn't mark them collected; status
+  // flips when they confirm pickup. Disposal and marketplace routes have
+  // nobody else to confirm, so those are marked collected immediately.
+  if(route !== 'repair' && route !== 'recycle'){
+    r.status = 'collected';
+    r.collectedAt = Date.now();
+  }
   renderAll();
   const ok = await rpcReportAction('mark_report_collected', { p_report_id: id, p_route: r.route, p_price: r.price ?? null });
-  if(!ok){ r.status = prevStatus; r.route = prevRoute; r.price = prevPrice; r.collectedAt = null; renderAll(); toast('Could not assign ORC-' + id + ', please try again.'); return; }
+  if(!ok){ r.status = prevStatus; r.route = prevRoute; r.price = prevPrice; r.collectedAt = prevCollectedAt; renderAll(); toast('Could not assign ORC-' + id + ', please try again.'); return; }
   toast('ORC-' + id + ' ASSIGNED, AI routed to ' + t('chart_'+r.route) + '.');
 }
 const collectReport = assignReport;
@@ -4810,7 +5043,7 @@ async function changeRoute(id, newRoute){
   const prevRoute = r.route, prevConfirmed = r.recyclerConfirmed;
   r.route = newRoute || null;
   r.routeOverridden = true;
-  if(newRoute !== 'recycle') r.recyclerConfirmed = false; // no longer the recycler's item
+  if(newRoute !== 'recycle') r.recyclerConfirmed = false; // clear the confirmation when re-routed away from recycle
   renderAll();
   const ok = await rpcReportAction('change_report_route', { p_report_id: id, p_route: r.route });
   if(!ok){ r.route = prevRoute; r.recyclerConfirmed = prevConfirmed; renderAll(); return; }
@@ -4828,11 +5061,13 @@ async function confirmPickup(id){
   const valueInput = document.getElementById('recyclerValue-'+id);
   const value = valueInput ? parseFloat(valueInput.value) : NaN;
   if(!value || value <= 0){ toast(t('toast_recycler_value_missing')); return; }
+  const prevStatus = r.status, prevCollectedAt = r.collectedAt;
   r.recyclerConfirmed = true;
   r.recyclerValue = value;
+  if(r.status !== 'collected'){ r.status = 'collected'; r.collectedAt = Date.now(); }
   renderAll();
   const ok = await rpcReportAction('confirm_report_pickup', { p_report_id: id, p_value: value });
-  if(!ok){ r.recyclerConfirmed = false; r.recyclerValue = null; renderAll(); return; }
+  if(!ok){ r.recyclerConfirmed = false; r.recyclerValue = null; r.status = prevStatus; r.collectedAt = prevCollectedAt; renderAll(); return; }
   toast(t('toast_pickup_confirmed') + " #ORC-" + id + ".");
 }
 
@@ -5000,6 +5235,65 @@ function reporterButtonHtml(r){
   if(!BACKEND_ENABLED || !r.reportedBy) return '';
   return `<button type="button" class="ghost" style="padding:3px 8px;font-size:11px;" onclick="openReporterDetails(${r.id})">${t('btn_view_reporter')}</button>`;
 }
+// True once the role the item was routed to has confirmed receiving it.
+// From then on admin can't reassign it. The server enforces this too; this
+// just hides the control instead of letting it fail after a click.
+function isRouteLocked(r){
+  if(r.route === 'recycle' && r.recyclerConfirmed) return true;
+  if(r.route === 'repair' && r.repaired) return true;
+  if(r.route === 'disposal' && r.status === 'collected') return true;
+  return false;
+}
+// Shared pickup map used in the admin queue, recycler table and repairer
+// queue: one pin per item still needing someone to physically go find it,
+// using the coordinates already captured when the citizen reported it, so
+// a recycler, repairer or admin can navigate straight to the spot instead
+// of working from a locality name and a written description alone.
+const QUEUE_MAPS = {}; // mapDivId -> { map, markers: [] }
+function toggleQueueMap(mapDivId, items){
+  const wrap = document.getElementById(mapDivId + 'Wrap');
+  if(!wrap) return;
+  const opening = wrap.style.display === 'none';
+  wrap.style.display = opening ? 'block' : 'none';
+  if(opening) renderQueueMap(mapDivId, items);
+}
+function renderQueueMap(mapDivId, items){
+  if(typeof L === 'undefined'){ console.warn('Leaflet not available, skipping queue map.'); return; }
+  const el = document.getElementById(mapDivId);
+  if(!el) return;
+  const pins = items.filter(r => typeof r.lat === 'number' && typeof r.lon === 'number');
+  let entry = QUEUE_MAPS[mapDivId];
+  if(!entry){
+    const map = L.map(mapDivId, { zoomControl: true, attributionControl: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+    entry = QUEUE_MAPS[mapDivId] = { map, markers: [] };
+  }
+  entry.markers.forEach(m => entry.map.removeLayer(m));
+  entry.markers = [];
+  setTimeout(()=>{
+    entry.map.invalidateSize(); // container was hidden at init, needs a nudge to size correctly
+    if(!pins.length){
+      entry.map.setView([4.65, -74.1], 11); // Bogota, zoomed out, when nothing has coordinates to show
+      return;
+    }
+    pins.forEach(r=>{
+      const marker = L.circleMarker([r.lat, r.lon], {
+        radius: 8, color: r.flaggedHazard ? '#c2410c' : '#176b45', weight: 2,
+        fillColor: r.flaggedHazard ? '#c2410c' : '#176b45', fillOpacity: 0.6
+      }).addTo(entry.map);
+      const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lon}`;
+      marker.bindPopup(
+        `<b>ORC-${r.id}</b> &middot; ${escapeHtml(translateType(r.type))}<br>${escapeHtml(r.locality)}<br>` +
+        `<a href="${dirUrl}" target="_blank" rel="noopener">${t('map_get_directions')}</a>`
+      );
+      entry.markers.push(marker);
+    });
+    const group = L.featureGroup(entry.markers);
+    entry.map.fitBounds(group.getBounds().pad(0.2), { maxZoom: 15 });
+  }, 150);
+}
 function renderOps(){
   const tbody = document.getElementById('opsTable');
   tbody.innerHTML = '';
@@ -5009,7 +5303,9 @@ function renderOps(){
   const bulkyOnly = document.getElementById('opsBulkyOnly')?.checked;
   REPORTS.filter(r=> r.status !== 'marketplace' && (!r.route || ['repair','recycle','disposal'].includes(r.route)) && (!bulkyOnly || r.bulky)).forEach(r=>{
     const tr = document.createElement('tr');
-    const routeSelect = r.status === 'collected'
+    const routeSelect = isRouteLocked(r)
+      ? `<span class="pill as-is" title="${escapeHtml(t('route_locked_note'))}">${t('route_locked')}</span>`
+      : r.route
       ? `<select id="route-select-${r.id}" onchange="changeRoute(${r.id}, this.value)" style="padding:4px 6px;font-size:11px;width:auto;">
           <option value="" ${!r.route?'selected':''}>${t('route_unset')}</option>
           ${routeOptions.map(opt=>`<option value="${opt}" ${r.route===opt?'selected':''}>${t('chart_'+opt)}</option>`).join('')}
@@ -5038,9 +5334,9 @@ function renderOps(){
       <td style="text-transform:capitalize">${r.condition}</td>
       <td>${r.points}</td>
       <td><span class="pill ${r.status}">${t('status_'+r.status)}</span></td>
-      <td>${(r.status==='collected' && r.route) ? `<span class="pill ${r.route}">${t('chart_'+r.route)}</span>` : '-'}</td>
+      <td>${r.route ? `<span class="pill ${r.route}">${t('chart_'+r.route)}</span>` : '-'}</td>
       <td>${routeSelect}</td>
-      <td>${r.status==='pending' ? `<button class="primary assign-btn" onclick="assignReport(${r.id})">${t('btn_mark_collected')}</button>` : ''}</td>
+      <td>${(!r.route && r.status==='pending') ? `<button class="primary assign-btn" onclick="assignReport(${r.id})">${t('btn_mark_collected')}</button>` : ''}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -5147,10 +5443,9 @@ async function submitReview(allRight){
     hazard_ok: d.hazard, true_hazard: trueHazard,
     updated_at: new Date().toISOString()
   });
-  // The server applies a wrong answer straight to the report (that's the
-  // whole point: a correction should actually change what's shown, not just
-  // log that something was wrong), so mirror that locally too rather than
-  // waiting on the next refresh or a realtime round-trip to see it.
+  // The server applies a wrong answer directly to the report so a correction
+  // changes what's shown, not just a log. Mirror that locally so it appears
+  // without waiting for a refresh or realtime update.
   if(d.type === false && trueType) r.type = trueType;
   if(d.cond === false && trueCond) r.condition = trueCond;
   if(d.hazard === false) r.flaggedHazard = trueHazard;
@@ -5613,9 +5908,8 @@ function renderDashboard(){
     { label: t('legend_items_handled'), color: '#8b6fcf' }
   ]);
 
-  // The business model centres on paying the organisation, not the
-  // individual recycler, so this has to be its own view, not just visible
-  // by re-deriving it from the per-person chart above.
+  // Payment goes to the organisation, not the individual recycler, so this is
+  // its own view rather than something read off the per-person chart above.
   const orgValue = {};
   REPORTS.filter(r=>r.route==='recycle' && r.recyclerConfirmed && r.handledOrgId).forEach(r=>{
     const key = r.handledOrgId;
@@ -5735,7 +6029,7 @@ function renderRecycler(){
       const tr = document.createElement('tr');
       const cs = claimState(r);
       const org = orgName(r.pickupClaimOrgId);
-      const claimLine = cs === 'mine' ? `<div class="small-note" style="margin:3px 0 0;">${t('claim_by_you')}</div>`
+      const claimLine = cs === 'mine' ? `<div class="small-note" style="margin:3px 0 0;">${t('claim_by_you')}${r.recycleHelperName ? ' · ' + t('pickup_helper_prefix') + ' ' + escapeHtml(r.recycleHelperName) : ''}</div>`
         : cs === 'theirs' ? `<div class="small-note" style="margin:3px 0 0;">${t('claim_by_other').replace('{name}', escapeHtml(displayNameById[r.pickupClaimedBy] || t('claim_someone')))}${org ? ' · ' + escapeHtml(org) : ''}</div>`
         : '';
       const doneOrg = r.recyclerConfirmed && orgName(r.handledOrgId);
@@ -5768,12 +6062,19 @@ function renderRecycler(){
 async function claimPickup(id){
   const r = REPORTS.find(x=>x.id===id);
   if(!r) return;
-  const prev = { by: r.pickupClaimedBy, at: r.pickupClaimedAt, org: r.pickupClaimOrgId };
+  // A registered recycler can send someone else, an informal worker not on
+  // the platform themselves, to actually do the physical collection; this
+  // just records who that is, the claim and the payment still belong to the
+  // registered account either way.
+  const helperName = prompt(t('prompt_pickup_helper'), '');
+  if(helperName === null) return;
+  const prev = { by: r.pickupClaimedBy, at: r.pickupClaimedAt, org: r.pickupClaimOrgId, helper: r.recycleHelperName };
   r.pickupClaimedBy = myUserId; r.pickupClaimedAt = Date.now(); r.pickupClaimOrgId = null;
+  r.recycleHelperName = helperName.trim() || null;
   renderAll();
-  const ok = await rpcReportAction('claim_recycle_pickup', { p_report_id: id });
+  const ok = await rpcReportAction('claim_recycle_pickup', { p_report_id: id, p_helper_name: helperName.trim() || null });
   if(!ok){
-    r.pickupClaimedBy = prev.by; r.pickupClaimedAt = prev.at; r.pickupClaimOrgId = prev.org;
+    r.pickupClaimedBy = prev.by; r.pickupClaimedAt = prev.at; r.pickupClaimOrgId = prev.org; r.recycleHelperName = prev.helper;
     renderAll();
     refreshReportsFromBackend(); // someone else probably got there first; show the real state
     return;
@@ -5791,13 +6092,49 @@ async function releasePickup(id){
   if(!ok){ r.pickupClaimedBy = prev.by; r.pickupClaimedAt = prev.at; r.pickupClaimOrgId = prev.org; renderAll(); return; }
   toast(t('toast_pickup_released'));
 }
+// Repairer pickup follows the same self-service pattern as recyclers: claim
+// an item so two repairers don't head to the same address, then confirm once
+// it's collected, which unlocks the "mark repaired" step below.
+async function claimRepairPickup(id){
+  const r = REPORTS.find(x=>x.id===id);
+  if(!r) return;
+  const prev = { by: r.repairPickupClaimedBy, at: r.repairPickupClaimedAt };
+  r.repairPickupClaimedBy = myUserId; r.repairPickupClaimedAt = Date.now();
+  renderAll();
+  const ok = await rpcReportAction('claim_repair_pickup', { p_report_id: id });
+  if(!ok){
+    r.repairPickupClaimedBy = prev.by; r.repairPickupClaimedAt = prev.at;
+    renderAll();
+    refreshReportsFromBackend();
+    return;
+  }
+  toast(t('toast_pickup_claimed'));
+}
+async function releaseRepairPickup(id){
+  const r = REPORTS.find(x=>x.id===id);
+  if(!r) return;
+  const prev = { by: r.repairPickupClaimedBy, at: r.repairPickupClaimedAt };
+  r.repairPickupClaimedBy = null; r.repairPickupClaimedAt = null;
+  renderAll();
+  const ok = await rpcReportAction('release_repair_pickup', { p_report_id: id });
+  if(!ok){ r.repairPickupClaimedBy = prev.by; r.repairPickupClaimedAt = prev.at; renderAll(); return; }
+  toast(t('toast_pickup_released'));
+}
+async function confirmRepairPickup(id){
+  const r = REPORTS.find(x=>x.id===id);
+  if(!r || r.repairCollected) return;
+  const prev = { collected: r.repairCollected, status: r.status, collectedAt: r.collectedAt };
+  r.repairCollected = true;
+  if(r.status !== 'collected'){ r.status = 'collected'; r.collectedAt = Date.now(); }
+  renderAll();
+  const ok = await rpcReportAction('confirm_repair_pickup', { p_report_id: id });
+  if(!ok){ r.repairCollected = prev.collected; r.status = prev.status; r.collectedAt = prev.collectedAt; renderAll(); return; }
+  toast(t('toast_repair_pickup_confirmed'));
+}
 
 
-// Builds the three marketplace lists a citizen can act on: free donations,
-// items sold directly by their owner, and items a repairer has fixed up.
-// Anything already claimed/sold or off the marketplace is left out.
-// What to show instead of a plain "Buy" button, depending on whether this
-// item is already reserved, and by whom relative to whoever is looking at it.
+// Picks what to show in place of a plain "Buy" button, based on whether the
+// item is reserved and by whom relative to the person viewing it.
 function buyActionHtml(r){
   const isMine = r.reportedBy && myUserId && r.reportedBy === myUserId;
   if(isMine && r.buyerId && !r.sold){
@@ -5812,7 +6149,10 @@ function buyActionHtml(r){
     }
     return `<span class="pill as-is">${t('tag_reserved')}</span>`;
   }
-  return `<button class="ghost" onclick="buyItem(${r.id})">${t('btn_buy')}</button>`;
+  const sellerId = r.route === 'repair' ? r.handledBy : r.reportedBy;
+  const msgLabel = r.route === 'repair' ? t('btn_message_repairer') : t('btn_message_seller');
+  const msgBtn = sellerId ? `<button type="button" class="ghost" onclick="openMessageThread(${r.id}, '${sellerId}', null, '${escapeHtml(translateType(r.type)).replace(/'/g,"\\'")}')">${msgLabel}</button> ` : '';
+  return `${msgBtn}<button class="ghost" onclick="buyItem(${r.id})">${t('btn_buy')}</button>`;
 }
 function claimActionHtml(r){
   const isMine = r.reportedBy && myUserId && r.reportedBy === myUserId;
@@ -5828,8 +6168,12 @@ function claimActionHtml(r){
     }
     return `<span class="pill as-is">${t('tag_reserved')}</span>`;
   }
-  return `<button class="ghost" onclick="claimDonation(${r.id})">${t('btn_claim')}</button>`;
+  const msgBtn = r.reportedBy ? `<button type="button" class="ghost" onclick="openMessageThread(${r.id}, '${r.reportedBy}', null, '${escapeHtml(translateType(r.type)).replace(/'/g,"\\'")}')">${t('btn_message_donor')}</button> ` : '';
+  return `${msgBtn}<button class="ghost" onclick="claimDonation(${r.id})">${t('btn_claim')}</button>`;
 }
+// Builds the three marketplace lists a citizen can act on: free donations,
+// items sold directly by their owner, and items a repairer has fixed up.
+// Anything already claimed/sold or off the marketplace is left out.
 function renderMarketplace(){
   const donationsList = document.getElementById('donationsList');
   const directSaleList = document.getElementById('directSaleList');
@@ -5925,9 +6269,8 @@ function outcomeLine(r){
     case 'recycle':
       return r.recyclerConfirmed ? t('myreports_recycle_confirmed') : t('myreports_recycle_awaiting');
     case 'disposal':
-      // Hazardous material legally cannot just go to the ordinary sanitary
-      // landfill alongside non-recoverable household waste, so this has to
-      // say something different, not just reuse the same disposal message.
+      // Hazardous material can't legally go to the ordinary landfill with
+      // non-recoverable household waste, so it gets its own message.
       return r.flaggedHazard ? t('myreports_disposal_hazard') : t('myreports_disposal');
     default:
       return t('myreports_awaiting_collection');
@@ -6006,6 +6349,9 @@ const CSV_EXPORT_COLUMNS = [
   ['repaired', r=>!!r.repaired],
   ['repaired_at', r=>r.repairedAt ? new Date(r.repairedAt).toISOString() : ''],
   ['hours_to_repair', r=> (r.repairedAt && r.collectedAt) ? Math.round(((r.repairedAt - r.collectedAt) / 36000)) / 100 : ''],
+  ['repair_collected', r=>!!r.repairCollected],
+  ['repair_pickup_claimed_by_id', r=>r.repairPickupClaimedBy || ''],
+  ['repair_pickup_claimed_at', r=>r.repairPickupClaimedAt ? new Date(r.repairPickupClaimedAt).toISOString() : ''],
   ['assisted', r=>!!r.assisted],
   ['assisted_channel', r=>r.assistedChannel || ''],
   ['ai_type', r=>r.aiType || ''],
@@ -6014,6 +6360,7 @@ const CSV_EXPORT_COLUMNS = [
   ['ai_confidence_original', r=>r.aiConfOriginal ?? ''],
   ['recycler_confirmed', r=>!!r.recyclerConfirmed],
   ['recycler_value', r=>r.recyclerValue ?? ''],
+  ['recycle_helper_name', r=>r.recycleHelperName || ''],
   ['handled_by_id', r=>r.handledBy || ''],
   ['buyer_id', r=>r.buyerId || ''],
   ['claimed_by_id', r=>r.claimedById || ''],
@@ -6029,11 +6376,9 @@ const CSV_EXPORT_COLUMNS = [
 function exportReports(format){
   const dateStamp = new Date().toISOString().slice(0,10);
   if(format === 'json'){
-    // Built from the exact same column definitions as the CSV, not a raw
-    // dump of REPORTS, so the two exports can never quietly drift apart
-    // (one gaining an organisation name or a review count the other lacks)
-    // and neither leaks internal-only fields like seed-data markers or
-    // inline SVG icon markup that have no place in an analysis file.
+    // Built from the same column definitions as the CSV rather than dumping
+    // REPORTS directly, so the two exports always match and neither includes
+    // internal fields such as seed-data markers or inline SVG icon markup.
     const rows = REPORTS.map(r => {
       const obj = {};
       CSV_EXPORT_COLUMNS.forEach(([name, fn]) => { obj[name] = fn(r); });
@@ -6050,11 +6395,16 @@ function exportReports(format){
 
 
 function renderRepairerPortal(){
+  const pickupEl = document.getElementById('repairPickupList');
   const queueEl = document.getElementById('repairQueueList');
   const listedEl = document.getElementById('repairListedList');
-  if(!queueEl || !listedEl) return;
+  if(!pickupEl || !queueEl || !listedEl) return;
 
-  const awaitingRepair = REPORTS.filter(r=>r.route==='repair' && r.status==='collected' && !r.repaired);
+  // A repairer collects the item themselves from where it was reported.
+  // repairCollected is their confirmation that they picked it up; only then
+  // does it move to "awaiting repair".
+  const needsPickup = REPORTS.filter(r=>r.route==='repair' && !r.repairCollected);
+  const awaitingRepair = REPORTS.filter(r=>r.route==='repair' && r.repairCollected && !r.repaired);
   const listed = REPORTS.filter(r=>r.route==='repair' && r.repaired);
   const sold = listed.filter(r=>r.sold);
   const income = sold.reduce((sum,r)=> sum + (r.price||0), 0);
@@ -6062,9 +6412,37 @@ function renderRepairerPortal(){
   const elA = document.getElementById('kpiRepairAwaiting');
   const elL = document.getElementById('kpiRepairListed');
   const elI = document.getElementById('kpiRepairIncome');
-  if(elA) elA.textContent = awaitingRepair.length;
+  if(elA) elA.textContent = needsPickup.length + awaitingRepair.length;
   if(elL) elL.textContent = listed.filter(r=>!r.sold).length;
   if(elI) elI.textContent = '$' + income.toLocaleString('en-US');
+
+  pickupEl.innerHTML = '';
+  if(needsPickup.length === 0){
+    pickupEl.innerHTML = `<div class="small-note">${t('empty_repair_pickup')}</div>`;
+  } else {
+    needsPickup.forEach(r=>{
+      const row = document.createElement('div');
+      row.className = 'risk-row';
+      const claimedByMe = r.repairPickupClaimedBy === myUserId;
+      const claimedByOther = r.repairPickupClaimedBy && !claimedByMe
+        && r.repairPickupClaimedAt && (Date.now() - r.repairPickupClaimedAt) < 48*3600000;
+      let action;
+      if(claimedByOther){
+        action = `<span class="pill as-is">${t('claim_reserved')}</span>`;
+      } else if(claimedByMe){
+        action = `<button class="ghost" onclick="confirmRepairPickup(${r.id})">${t('btn_confirm_pickup')}</button>
+                   <button class="ghost" onclick="releaseRepairPickup(${r.id})">${t('btn_release_pickup')}</button>`;
+      } else {
+        action = `<button class="ghost" onclick="claimRepairPickup(${r.id})">${t('btn_claim_pickup')}</button>`;
+      }
+      const dirUrl = (typeof r.lat === 'number' && typeof r.lon === 'number')
+        ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lon}" target="_blank" rel="noopener" class="ghost" style="text-decoration:none;display:inline-flex;align-items:center;padding:6px 10px;font-size:11.5px;">${t('map_get_directions')}</a>` : '';
+      row.innerHTML = `${renderThumb(r.photoDataUrls, r.type, r.seedIconSvg)}
+        <div class="risk-name" style="width:auto;flex:1;">ORC-${r.id} · ${escapeHtml(translateType(r.type))} | ${escapeHtml(r.locality)} ${reviewControl(r)} ${assistControl(r)} ${reporterButtonHtml(r)}</div>
+        ${dirUrl} ${action}`;
+      pickupEl.appendChild(row);
+    });
+  }
 
   queueEl.innerHTML = '';
   if(awaitingRepair.length === 0){
@@ -6113,18 +6491,29 @@ function renderRepairerPortal(){
 }
 
 
-const AQI_BASE = {};
-LOCALITIES.forEach(l=> AQI_BASE[l] = BACKEND_ENABLED ? 40 : 55 + Math.random()*25);
-AQI_BASE[UNCLASSIFIED_BUCKET] = AQI_BASE[LOCALITIES[0]];
+// Each locality has a fixed baseline, loosely based on differences in
+// traffic and industrial density across Bogotá localities, so the simulated
+// figure doesn't change on reload. Live data adds on top: pending items
+// raise it, hazard-flagged items raise it more (hazardous material is the
+// fire risk), and items left unresolved longer raise it further, since
+// buildup is about accumulation over time, not just the current count.
+const AQI_LOCALITY_BASELINE = {
+  'Puente Aranda':58, 'Kennedy':54, 'Ciudad Bolívar':56, 'Bosa':50, 'Rafael Uribe Uribe':52,
+  'Fontibón':48, 'Engativá':46, 'Suba':44, 'Usme':48, 'Santa Fe':50, 'Usaquén':38, 'Chapinero':36,
+};
+const AQI_DEFAULT_BASELINE = 45;
 function renderAQI(){
   const list = document.getElementById('aqiList');
   if(!list) return;
   list.innerHTML = '';
   const aqiBuckets = getAllLocalityBuckets();
+  const now = Date.now();
   const scored = aqiBuckets.map(loc=>{
-    const pending = REPORTS.filter(r=>r.localityBucket===loc && r.status==='pending').length;
-    const base = AQI_BASE[loc] ?? AQI_BASE[LOCALITIES[0]]; // custom place names have no pre-set baseline | use the same flat one every other locality starts from
-    const aqi = Math.min(180, Math.round(base + pending*4));
+    const pending = REPORTS.filter(r=>r.localityBucket===loc && r.status==='pending');
+    const hazardPending = pending.filter(r=>r.flaggedHazard).length;
+    const avgAgeDays = pending.length ? pending.reduce((s,r)=>s+(now-r.timestamp),0)/pending.length/86400000 : 0;
+    const base = AQI_LOCALITY_BASELINE[loc] ?? AQI_DEFAULT_BASELINE;
+    const aqi = Math.min(180, Math.round(base + pending.length*3 + hazardPending*8 + avgAgeDays*2));
     return {loc, aqi};
   }).sort((a,b)=>b.aqi-a.aqi);
   scored.forEach(s=>{
@@ -6162,8 +6551,39 @@ function renderAll(){
   steps.forEach(fn=>{
     try{ fn(); } catch(err){ console.error('renderAll: ' + fn.name + ' failed', err); }
   });
+  // These functions replace whole sections' innerHTML, which can bring back
+  // overflowing elements, so the overflow check runs again after each render.
+  // Function declarations hoist, so it can be called here even though it's
+  // defined further down.
+  if(typeof fixOverflowingElements === 'function') setTimeout(fixOverflowingElements, 60);
 }
+// Safety net for elements wider than a narrow phone screen: finds rendered
+// elements whose right edge extends past the viewport and constrains them.
+// Skips anything meant to scroll or be wide (.table-scroll-wrap, the Leaflet
+// maps, fixed-position modals).
+function fixOverflowingElements(){
+  if(window.innerWidth > 900) return; // desktop renders fine; only needed on narrow screens
+  const vw = document.documentElement.clientWidth;
+  const skipSelectors = '.table-scroll-wrap, .queue-map, .leaflet-container, #messageThreadModal, #contactDetailsModal, #reviewModal, .install-banner';
+  document.querySelectorAll('body *').forEach(el=>{
+    if(el.closest(skipSelectors)) return;
+    if(el.offsetWidth === 0 && el.offsetHeight === 0) return; // not actually rendered
+    if(getComputedStyle(el).position === 'fixed') return;
+    const rect = el.getBoundingClientRect();
+    // Low width floor instead of a fraction of the viewport: the offender can
+    // be as small as a single badge, and the fix is harmless to apply broadly.
+    if(rect.right > vw + 2 && rect.width > 20){
+      el.style.maxWidth = '100%';
+      el.style.boxSizing = 'border-box';
+      el.style.overflowWrap = 'break-word';
+    }
+  });
+}
+window.addEventListener('resize', ()=>setTimeout(fixOverflowingElements, 200));
+window.addEventListener('orientationchange', ()=>setTimeout(fixOverflowingElements, 300));
+
 renderAll();
+setTimeout(fixOverflowingElements, 400);
 setInterval(renderNetworkSvg, 4000);
 
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
@@ -6173,10 +6593,9 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 }
 
 // ---- "Install this app" prompt, for Android/desktop Chrome and iOS ----
-// Chromium browsers fire a real event we can hold onto and trigger later
-// from our own button; iOS has no such event at all, Safari only offers
-// install through its manual Share -> Add to Home Screen, so the most we
-// can do there is show them where to find it.
+// Chromium browsers fire an event we can hold onto and trigger from our own
+// button. iOS has no such event; Safari only installs through Share -> Add
+// to Home Screen, so there we just show where to find it.
 let deferredInstallPrompt = null;
 const INSTALL_DISMISS_KEY = 'oracleNetInstallDismissed';
 
@@ -6189,8 +6608,23 @@ function isIOSDevice(){
   // support, which is the standard way to tell the two apart.
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 }
+function installBannerWasDismissedRecently(){
+  const raw = localStorage.getItem(INSTALL_DISMISS_KEY);
+  if(!raw) return false;
+  // Dismissing hides the banner for 14 days, similar to Chrome's own
+  // re-prompt cooldown.
+  if(raw === '1'){
+    // A stored value of '1' is treated as expired and replaced with a
+    // timestamp so the normal cooldown applies.
+    localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+    return true;
+  }
+  const dismissedAt = Number(raw);
+  if(!dismissedAt) return false;
+  return (Date.now() - dismissedAt) < 14*86400000;
+}
 function showInstallBanner(kind){
-  if(localStorage.getItem(INSTALL_DISMISS_KEY) === '1') return;
+  if(installBannerWasDismissedRecently()) return;
   if(isRunningStandalone()) return;
   const banner = document.getElementById('installBanner');
   const titleEl = document.getElementById('installBannerTitle');
@@ -6207,16 +6641,15 @@ function showInstallBanner(kind){
     actionEl.style.display = 'inline-block';
   }
   banner.style.display = 'flex';
-  // Fixed-position, so push the rest of the page down by its real height
-  // (text length and safe-area insets vary) rather than letting it sit on
-  // top of the existing nav bar.
+  // The banner is fixed-position, so pad the page by its rendered height
+  // (text length and safe-area insets vary) to keep it off the nav bar.
   requestAnimationFrame(() => { document.body.style.paddingTop = banner.offsetHeight + 'px'; });
 }
 function dismissInstallBanner(){
   const banner = document.getElementById('installBanner');
   if(banner) banner.style.display = 'none';
   document.body.style.paddingTop = '';
-  localStorage.setItem(INSTALL_DISMISS_KEY, '1');
+  localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
 }
 async function triggerInstallPrompt(){
   if(!deferredInstallPrompt) return;
