@@ -3258,6 +3258,7 @@ function mapBackendRow(row){
     soldAt: row.sold_at ? new Date(row.sold_at).getTime() : null,
     donationClaimedAt: row.donation_claimed_at ? new Date(row.donation_claimed_at).getTime() : null,
     recyclerConfirmed: row.recycler_confirmed,
+    disposalConfirmedByAdmin: !!row.disposal_confirmed_by_admin,
     recyclerValue: row.recycler_value !== null && row.recycler_value !== undefined ? Number(row.recycler_value) : null,
     repairedAt: row.repaired_at ? new Date(row.repaired_at).getTime() : null,
     pickupClaimedBy: row.pickup_claimed_by || null,
@@ -5736,13 +5737,17 @@ const collectReport = assignReport;
 async function changeRoute(id, newRoute){
   const r = REPORTS.find(r=>r.id===id);
   if(!r) return;
-  const prevRoute = r.route, prevConfirmed = r.recyclerConfirmed;
+  const prevRoute = r.route, prevConfirmed = r.recyclerConfirmed, prevDisposalConfirmed = r.disposalConfirmedByAdmin;
   r.route = newRoute || null;
   r.routeOverridden = true;
   if(newRoute !== 'recycle') r.recyclerConfirmed = false; // no longer the recycler's item
+  // Mirrors what the change_report_route RPC sets server-side: only an
+  // explicit admin re-route to disposal (this function) locks it, never
+  // an auto-assignment at collection time.
+  r.disposalConfirmedByAdmin = (newRoute === 'disposal');
   renderAll();
   const ok = await rpcReportAction('change_report_route', { p_report_id: id, p_route: r.route });
-  if(!ok){ r.route = prevRoute; r.recyclerConfirmed = prevConfirmed; renderAll(); return; }
+  if(!ok){ r.route = prevRoute; r.recyclerConfirmed = prevConfirmed; r.disposalConfirmedByAdmin = prevDisposalConfirmed; renderAll(); return; }
   toast("#ORC-" + id + " → " + (newRoute ? t('chart_'+newRoute) : t('route_unset')));
 }
 
@@ -5940,11 +5945,12 @@ function isRouteLocked(r){
   if(r.route === 'recycle' && r.recyclerConfirmed) return true;
   if(r.route === 'repair' && r.repaired) return true;
   // Disposal has no separate role confirming receipt the way recycle and
-  // repair do - "collected" there is just a status flag, often set
-  // automatically, with nobody else's real-world action behind it yet. So
-  // admin keeps the ability to correct a misrouted item even after that,
-  // unlike recycle/repair which lock once someone else has physically
-  // confirmed it.
+  // repair do, so being auto-assigned there (e.g. by the AI classifier at
+  // collection time) never locks it - admin can always correct a
+  // misrouted item. It only locks once an admin has deliberately chosen
+  // disposal themselves via the Re-route control, which is a real human
+  // decision worth protecting from accidental changes.
+  if(r.route === 'disposal' && r.disposalConfirmedByAdmin) return true;
   return false;
 }
 // Shared pickup map used in the admin queue, recycler table and repairer
