@@ -5939,7 +5939,12 @@ function reporterButtonHtml(r){
 function isRouteLocked(r){
   if(r.route === 'recycle' && r.recyclerConfirmed) return true;
   if(r.route === 'repair' && r.repaired) return true;
-  if(r.route === 'disposal' && r.status === 'collected') return true;
+  // Disposal has no separate role confirming receipt the way recycle and
+  // repair do - "collected" there is just a status flag, often set
+  // automatically, with nobody else's real-world action behind it yet. So
+  // admin keeps the ability to correct a misrouted item even after that,
+  // unlike recycle/repair which lock once someone else has physically
+  // confirmed it.
   return false;
 }
 // Shared pickup map used in the admin queue, recycler table and repairer
