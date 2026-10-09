@@ -294,14 +294,22 @@ function loadScriptFallback(fallbackSrc){
   #reportMap{height:240px;border-radius:8px;border:1px solid var(--line);}
   .queue-map{height:320px;border-radius:10px;border:1px solid var(--line);margin-bottom:14px;}
   .queue-map-toggle{padding:6px 11px;font-size:11.5px;}
-  /* The wrapper is the only element that scrolls horizontally. The table
-     just grows to the width its content needs, so touch drags always go to
-     one scroll container instead of being split between two. */
+  /* A table and a wrapper around it both trying to own horizontal scroll
+     at once is a known mobile anti-pattern: touch drags can get captured
+     by the inner element and never reach the outer one, making the whole
+     thing feel stuck even though scrolling is technically possible. Here
+     the wrapper is the only scroll container; the table itself is told to
+     grow to whatever width its content actually needs (never scrolling on
+     its own), so there is exactly one thing to drag, not two fighting
+     over the same gesture. */
   .table-scroll-wrap{overflow-x:scroll;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;touch-action:pan-x pan-y;}
   .table-scroll-wrap table{display:table;overflow:visible;}
   @media(max-width:760px){
-    /* A fixed pixel min-width forces overflow reliably on mobile browsers;
-       width:max-content gives inconsistent results in some table engines. */
+    /* An explicit pixel minimum, not width:max-content, is what actually
+       forces real horizontal overflow reliably across mobile browsers;
+       max-content's intrinsic-sizing calculation has had inconsistent
+       support on some mobile table-rendering engines, which can leave
+       nothing to scroll to even though the wrapper is ready to scroll. */
     .table-scroll-wrap table{min-width:920px;}
     .table-scroll-wrap table th, .table-scroll-wrap table td{white-space:nowrap;}
   }
@@ -398,6 +406,20 @@ function loadScriptFallback(fallbackSrc){
   .msg-thread-compose{display:flex;gap:8px;align-items:flex-end;}
   .msg-thread-compose textarea{flex:1;min-height:40px;max-height:90px;resize:vertical;}
   .msg-thread-empty{color:var(--ink-dim);font-size:13px;text-align:center;padding:20px 10px;}
+  .assist-chat-log{max-height:440px;overflow-y:auto;background:var(--basalt-2);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;}
+  .assist-chat-log .msg-bubble{max-width:88%;}
+  .assist-input-row{display:flex;gap:8px;align-items:flex-end;}
+  .assist-input-row input[type="text"],.assist-input-row input[type="tel"]{flex:1;margin:0;}
+  .voice-mic-btn{margin:0;flex:0 0 auto;padding:8px 12px;border:2px solid var(--ink-dim);background:rgba(231,240,234,0.9);}
+  .voice-mic-btn:hover{border-color:var(--ink);}
+  .voice-mic-btn.listening{background:var(--ember);color:#fff;border-color:var(--ember);}
+  .assist-choice-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .assist-choice-row button{margin:0;}
+  .assist-photo-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .assist-photo-thumb{max-width:96px;border-radius:8px;border:1px solid var(--line);display:block;margin-top:8px;}
+  .dash-qa-card{background:rgba(2,132,199,0.05);}
+  .dash-qa-log{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:360px;overflow-y:auto;}
+  .dash-qa-log .msg-bubble{max-width:92%;}
   #contactDetailsModal .contact-modal-card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.28);border:1px solid var(--line);}
   #contactDetailsModal h3{font-family:var(--font-display);margin:0 0 12px;font-size:19px;}
   #reviewModal{position:fixed;inset:0;background:rgba(10,12,13,0.55);z-index:250;display:none;align-items:center;justify-content:center;padding:24px;}
@@ -719,7 +741,7 @@ function loadScriptFallback(fallbackSrc){
   .who-card p{margin:7px 0 0;color:var(--ink-dim);font-size:12px;line-height:1.45;max-width:230px;}
   .who-card h4{margin-bottom:0;}
 
-  /* ---- Photo backgrounds: hero and selected sections ---- */
+  /* ---- Photography pass: hero + a few contextual section moments ---- */
   .home-hero{
     background:
       linear-gradient(100deg, rgba(9,26,19,0.72) 0%, rgba(9,28,20,0.52) 34%, rgba(9,28,20,0.22) 58%, rgba(9,28,20,0.08) 78%, rgba(9,28,20,0.1) 100%),
@@ -763,14 +785,15 @@ function loadScriptFallback(fallbackSrc){
   .pub-page-banner h2{position:relative;color:#fff;font-family:var(--font-display);font-size:30px;margin:6px 0 0;}
   @media(max-width:620px){.home-testimonials{padding:55px 20px;}.pub-page-banner{height:170px;padding:20px;}.pub-page-banner h2{font-size:23px;}}
 
-  /* ---- Dashboard KPI cards: photo background, kept legible ---- */
+  /* ---- Dashboard KPI cards: contextual photo background, kept legible ---- */
   .card.kpi{position:relative;overflow:hidden;border-color:rgba(255,255,255,.12);}
   .card.kpi .num{position:relative;z-index:1;max-width:100%;overflow-wrap:break-word;}
   .card.kpi .label{position:relative;z-index:1;max-width:100%;overflow-wrap:break-word;}
-  /* KPI cards with a photo background use light text on a small translucent
-     chip so the numbers stay readable over any part of the image. The photo
-     and gradient scrim share one background shorthand on the card itself
-     (no pseudo-elements), so the card's own background-color never covers it. */
+  /* Any card.kpi that gets a themed photo flips to light-on-dark text, with a
+     small translucent chip behind the text so legibility never depends on how
+     bright that particular patch of photo happens to be. Photo + scrim are one
+     "background" shorthand directly on the card (no pseudo-elements) so the
+     card's own opaque background-color can never paint over/hide the photo. */
   #tab-circular .card.kpi, #tab-recycler .card.kpi, #tab-repairershop .card.kpi,
   #tab-dashboard .kpi-zone-city .card.kpi, #tab-dashboard .kpi-zone-market .card.kpi{
     border-color:rgba(255,255,255,.14);
@@ -789,9 +812,13 @@ function loadScriptFallback(fallbackSrc){
     backdrop-filter:blur(2px);
   }
   #tab-circular .card.kpi{background-image:linear-gradient(165deg, rgba(6,16,11,.42) 0%, rgba(6,18,12,.22) 55%, rgba(6,18,12,.12) 100%), url('https://images.unsplash.com/photo-1488410384625-f46b0360fc49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');background-position:center 40%;}
-  /* On narrow screens the number and label badges stack as full-width,
-     wrapping blocks. As inline-blocks sized to their text they can grow
-     wider than the card and get clipped. */
+  /* On mobile, an inline-block badge sized to its own text, not its card,
+     is exactly the kind of element that can end up wider than the screen
+     and get clipped by the overflow protection elsewhere on the page,
+     which plain wrapped paragraph text (like the flow-step boxes above)
+     never runs into. Forcing these to behave as ordinary full-width,
+     wrapping text on narrow screens removes that risk entirely rather
+     than hoping a max-width override is enough to catch every case. */
   @media(max-width:760px){
     #tab-circular .card.kpi .num, #tab-recycler .card.kpi .num, #tab-repairershop .card.kpi .num,
     #tab-dashboard .kpi-zone-city .card.kpi .num, #tab-dashboard .kpi-zone-market .card.kpi .num,
@@ -818,7 +845,7 @@ function loadScriptFallback(fallbackSrc){
 
 
 
-  /* ---- Light photo wash for content, list and table cards ---- */
+  /* ---- Light photo-wash for content/list/table cards that were plain white ---- */
   #opsQueueCard, #riskListCard, #topHotspotsCard, #criticalPointsCard,
   #circularBreakdownCard, #recyclerTableCard, #repairQueueList, #repairListedList,
   #usersListCard, #timeChartCard, #localityChartCard, #responseLocalityChartCard,
@@ -838,16 +865,18 @@ function loadScriptFallback(fallbackSrc){
   #recyclerOrgChartCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   #repairQueueList, #repairListedList, #repairPickupList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   #usersListCard{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
-  /* Table body cells get a solid backing so rows stay readable over the
-     card's photo; header cells have their own. */
+  /* Table rows in photo-backed cards need their own solid backing, since
+     header cells already get one but body cells never did. */
   #opsQueueCard tbody tr td, #recyclerTableCard tbody tr td, #usersListCard tbody tr td{
     background:rgba(255,255,255,.86);
   }
   #opsQueueCard tbody tr:hover td, #recyclerTableCard tbody tr:hover td, #usersListCard tbody tr:hover td{
     background:rgba(255,255,255,.96);
   }
-  /* Row-based lists (marketplace, hotspots, repair queue) get a backing
-     strip per row, since the card wash alone isn't enough over a busy photo. */
+  /* Same idea for the row-based lists (marketplace, hotspots, repair queue):
+     each row gets its own backing strip instead of relying on the card's
+     overall wash, which isn't always strong enough once the photo underneath
+     has a lot going on in it. */
   #donationsList .risk-row, #directSaleList .risk-row, #forSaleList .risk-row,
   #riskListCard .risk-row, #topHotspotsCard .risk-row, #criticalPointsCard .risk-row,
   #repairQueueList .risk-row, #repairListedList .risk-row, #repairPickupList .risk-row,
@@ -877,8 +906,8 @@ function loadScriptFallback(fallbackSrc){
   #myReportsList{background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)), url('https://images.unsplash.com/photo-1625669981647-dc396c990a6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
   #newReportCard, #reportSimulatorCard{background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)), url('https://images.unsplash.com/photo-1763952326080-ec26ebf4e9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=85&w=900');}
 
-  /* Scores and bar tracks on photo-wash cards use a stronger colour and a
-     lighter plate so they hold up against the image behind them. */
+  /* Text on top of the light-wash cards above needs a bit more weight than
+     it does on plain white, since it's competing with a photo underneath. */
   #opsQueueCard .risk-score, #riskListCard .risk-score, #topHotspotsCard .risk-score,
   #criticalPointsCard .risk-score, #circularBreakdownCard .risk-score, #recyclerTableCard .risk-score,
   #timeChartCard .risk-score, #localityChartCard .risk-score, #responseLocalityChartCard .risk-score,
@@ -894,10 +923,11 @@ function loadScriptFallback(fallbackSrc){
     background:rgba(255,255,255,.78);
   }
 
-  /* Phone layout for the public pages. The page wrapper's 40px side padding
-     leaves only ~270px on a 390px screen, too narrow for the hero panel, so
-     the wrapper padding is dropped here (inner sections carry their own) and
-     the panel is sized from its container. */
+  /* Phone layout for the public pages. The page wrapper keeps 40px of side
+     padding, which on a 390px screen left the hero only ~270px to work with,
+     while the hero panel was sized from the screen width (~335px) and ran
+     off the right edge. Inner sections already carry their own side padding,
+     so the wrapper's is dropped here and the panel is sized from its container. */
   .hero-panel{max-width:100%;box-sizing:border-box;}
   .home-hero > *{min-width:0;}
   @media(max-width:620px){
@@ -1362,6 +1392,10 @@ function loadScriptFallback(fallbackSrc){
       <span class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="13.5"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/></svg></span>
       <span class="tab-label" data-i18n="nav_report">Report Waste</span>
     </button>
+    <button class="tab-btn" data-tab="assist" data-roles="citizen">
+      <span class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="tab-label" data-i18n="nav_assist">Assisted Reporting</span>
+    </button>
     <button class="tab-btn" data-tab="ops" data-roles="admin">
       <span class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 2.5V16h-7"/><circle cx="6" cy="18.2" r="1.5"/><circle cx="17" cy="18.2" r="1.5"/></svg></span>
       <span class="tab-label" data-i18n="nav_ops">Collection Queue</span>
@@ -1410,6 +1444,10 @@ function loadScriptFallback(fallbackSrc){
     
     <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="13.5"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/></svg></span><h2 class="sec-title" data-i18n="report_title">Citizen Reporting</h2></div>
     <p class="sec-desc" data-i18n="report_desc">AI classifies your item and awards Impact Points instantly.</p>
+    <p class="small-note" style="margin:-4px 0 14px;">
+      <span data-i18n="report_assist_crosslink_text">Filing this for someone who has no smartphone?</span>
+      <a href="#" class="assist-link" onclick="goToTab('assist');return false;" data-i18n="report_assist_crosslink_cta">Use Assisted Reporting</a>
+    </p>
     <div class="grid2">
       <div class="card" id="newReportCard">
         <h3 data-i18n="report_new_title">New report</h3>
@@ -1424,7 +1462,10 @@ function loadScriptFallback(fallbackSrc){
 
         <label for="locality" data-i18n="label_locality">Locality</label>
         <select id="locality"></select>
-        <input type="text" id="localityOther" data-i18n-placeholder="placeholder_locality_other" placeholder="Type your exact location (e.g. street, landmark, neighbourhood)" style="display:none;margin-top:8px;">
+        <div id="localityOtherRow" style="display:none;margin-top:8px;align-items:flex-start;gap:8px;">
+          <input type="text" id="localityOther" data-i18n-placeholder="placeholder_locality_other" placeholder="Type your exact location (e.g. street, landmark, neighbourhood)" style="flex:1;margin-top:0;">
+          <span id="localityOtherMicSlot"></span>
+        </div>
         <p class="small-note" id="localityOtherNote" style="display:none;margin:4px 0 0;" data-i18n="locality_other_note">The more specific you are here, street, landmark, nearby building, the more exact the pin on the collector's map will be, instead of just the centre of the area.</p>
         <p class="small-note" id="localityOperatorNote" style="margin:4px 0 0;"></p>
         <label data-i18n="label_waste_items">Waste items</label>
@@ -1502,7 +1543,22 @@ function loadScriptFallback(fallbackSrc){
     </div>
   </section>
 
-  
+
+  <section class="panel" id="tab-assist">
+
+    <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><h2 class="sec-title" data-i18n="assist_chat_title">Assisted Reporting</h2></div>
+    <p class="sec-desc" data-i18n="assist_chat_desc">File a report for someone without a smartphone by typing, speaking, or tapping a choice.</p>
+    <p class="small-note" style="margin:-4px 0 14px;">
+      <span data-i18n="assist_report_crosslink_text">Reporting your own waste?</span>
+      <a href="#" class="assist-link" onclick="goToTab('report');return false;" data-i18n="assist_report_crosslink_cta">Use Report Waste</a>
+    </p>
+    <div class="card" id="assistChatCard">
+      <div class="assist-chat-log" id="assistChatLog"></div>
+      <div id="assistChatInputArea"></div>
+    </div>
+  </section>
+
+
   <section class="panel" id="tab-ops">
     
     <div class="sec-header"><span class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 2.5V16h-7"/><circle cx="6" cy="18.2" r="1.5"/><circle cx="17" cy="18.2" r="1.5"/></svg></span><h2 class="sec-title" data-i18n="ops_title">Assignment Queue</h2></div>
@@ -1590,6 +1646,16 @@ function loadScriptFallback(fallbackSrc){
       <button class="ghost" onclick="exportReports('csv')" data-i18n="btn_export_csv">⬇ Export CSV</button>
       <button class="ghost" onclick="exportReports('json')" data-i18n="btn_export_json">⬇ Export JSON</button>
     </div>
+    <div class="card dash-qa-card" id="dashQaCard" style="margin-bottom:24px;">
+      <h3 data-i18n="dash_qa_title">Ask the dashboard</h3>
+      <p class="sec-desc" style="margin-bottom:12px;" data-i18n="dash_qa_desc">Answers come only from the figures already shown on this page, so they always match what you see here.</p>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="dashQaInput" data-i18n-placeholder="dash_qa_placeholder" placeholder="e.g. Which locality has the slowest response time?" style="margin:0;" onkeydown="if(event.key==='Enter') askDashboardQuestion();">
+        <span id="dashQaMicSlot"></span>
+        <button class="primary" id="dashQaAskBtn" style="margin:0;white-space:nowrap;" onclick="askDashboardQuestion()" data-i18n="btn_dash_qa_ask">Ask</button>
+      </div>
+      <div class="dash-qa-log" id="dashQaLog"></div>
+    </div>
     <div class="grid3 kpi-zone-city" style="margin-bottom:16px;">
       <div class="card kpi"><span class="num" id="kpiTotal">0</span><span class="label" data-i18n="kpi_total">Total reports</span></div>
       <div class="card kpi"><span class="num" id="kpiCollected">0</span><span class="label" data-i18n="kpi_collected">Collected</span></div>
@@ -1601,7 +1667,7 @@ function loadScriptFallback(fallbackSrc){
       <div class="card kpi"><span class="num" id="kpiRecyclerIncome">$0</span><span class="label" data-i18n="kpi_recycler_income">Recycler income recorded (COP)</span></div>
     </div>
 
-    <div class="card" style="margin-bottom:24px;background:rgba(2,132,199,0.05);">
+    <div class="card" id="cityContextCard" style="margin-bottom:24px;background:rgba(2,132,199,0.05);">
       <h3 data-i18n="city_context_title" style="margin:0 0 4px;">Bogotá citywide context (UAESP, 2025-2026)</h3>
       <p class="small-note" data-i18n="city_context_note" style="margin:0 0 12px;">Reference figures reported by UAESP to the Bogotá City Council (Proposition 63 of 2026), shown for context - not this platform's live data.</p>
       <div class="grid3 kpi-zone-city">
@@ -1892,7 +1958,7 @@ const SUPABASE_EDGE_URL = "https://hifrlzicwboywlumyswe.supabase.co/functions/v1
 let BACKEND_ENABLED = SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
 const sb = BACKEND_ENABLED && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 if(BACKEND_ENABLED && !sb){
-  // Supabase SDK failed to load; run on local demo data.
+  // SDK script didn't load - fall back to local demo data
   BACKEND_ENABLED = false;
   console.warn("Oracle Net: Supabase SDK failed to load | running on local demo data only.");
 }
@@ -1921,6 +1987,8 @@ async function loadReportsFromBackend(retryCount){
 // page load.
 let reportsRequestSeq = 0;
 let reportsAppliedSeq = 0;
+// Checks people have made of the AI's classification. Admins get every row,
+// repairers and recyclers only their own (row-level security does the filtering).
 // Recycler organisations (public to any signed-in user; they're just names).
 let RECYCLER_ORGS = [];
 async function loadRecyclerOrgs(){
@@ -1933,14 +2001,26 @@ function orgName(id){
   const o = RECYCLER_ORGS.find(x => x.id === id);
   return o ? o.name : '';
 }
-// Checks people have made of the AI's classification. Admins get every row,
-// repairers and recyclers only their own (row-level security does the filtering).
 let REVIEWS = [];
 async function loadReviews(){
   if(!sb) return;
   const { data, error } = await sb.from('classification_reviews').select('*');
   if(error){ console.error('loadReviews', error); return; }
   REVIEWS = data || [];
+}
+async function loadLeaderboardLedger(){
+  if(!sb) return;
+  const { data, error } = await sb.rpc('get_leaderboard');
+  if(error){ console.error('loadLeaderboardLedger', error); return; }
+  const ledger = {};
+  (data || []).forEach(row => { ledger[row.citizen_key] = row.points_total; });
+  leaderboardLedger = ledger;
+}
+async function loadSignedInImpactStats(){
+  if(!sb) return;
+  const { data, error } = await sb.rpc('get_public_impact_stats');
+  if(error){ console.error('loadSignedInImpactStats', error); return; }
+  if(data && data.length) signedInImpactStats = data[0];
 }
 
 // In-app notifications: one row per person, created by a database trigger
@@ -1995,9 +2075,10 @@ function closeNotifPanelOnOutsideClick(e){
     document.removeEventListener('click', closeNotifPanelOnOutsideClick);
   }
 }
-// Messages panel: lists every conversation thread for the signed-in user,
-// so a conversation can be reopened without going back to the original
-// marketplace listing.
+// Messages panel: lists every active conversation thread for the signed-in
+// user, independent of the single-thread modal above, so an existing
+// conversation can be found again rather than only reachable by re-opening
+// the original marketplace listing.
 let MESSAGE_THREADS = [];
 async function toggleMessagesPanel(event){
   event.stopPropagation();
@@ -2085,7 +2166,7 @@ function applyLoadedReports(rows){
 // already been applied.
 async function refreshReportsFromBackend(){
   const seq = ++reportsRequestSeq;
-  const [rows] = await Promise.all([loadReportsFromBackend(), loadReviews(), loadRecyclerOrgs(), loadNotifications()]);
+  const [rows] = await Promise.all([loadReportsFromBackend(), loadReviews(), loadRecyclerOrgs(), loadNotifications(), loadLeaderboardLedger(), loadSignedInImpactStats()]);
   if(!rows) return false;
   if(seq < reportsAppliedSeq) return true;
   reportsAppliedSeq = seq;
@@ -2113,7 +2194,7 @@ async function saveReportToBackend(report){
     for(const src of sourcePhotos){
       uploadedUrls.push(await uploadPhotoToBackend(src, 'report'));
     }
-    const photo_url = uploadedUrls[0] || null; // first photo, used by single-thumbnail views
+    const photo_url = uploadedUrls[0] || null; // kept for every existing single-thumbnail view
     const { data, error } = await sb.from('reports').insert({
       citizen: report.citizen, locality: report.locality, locality_bucket: report.localityBucket,
       lat: report.lat, lon: report.lon, type: report.type, condition: report.condition,
@@ -2265,6 +2346,72 @@ async function classifyWasteWithAI(description, photoSource){
   }
 }
 
+// Reads the figures the dashboard has already rendered on screen, rather
+// than recomputing them, so the AI's answers always match what the admin
+// is looking at. Figures inside the UAESP reference card are tagged as
+// citywide context, not this platform's live data, so the model doesn't
+// blend the two kinds of numbers.
+function buildDashboardSnapshot(){
+  const dashboard = document.getElementById('tab-dashboard');
+  if(!dashboard) return [];
+  const contextCard = document.getElementById('cityContextCard');
+  const rows = [];
+  dashboard.querySelectorAll('.card.kpi').forEach(card=>{
+    const num = card.querySelector('.num');
+    const label = card.querySelector('.label');
+    if(!num || !label) return;
+    const inContext = contextCard && contextCard.contains(card);
+    rows.push({
+      label: label.textContent.trim(),
+      value: num.textContent.trim(),
+      context: inContext ? 'UAESP citywide reference figure, not live platform data' : undefined
+    });
+  });
+  return rows;
+}
+let dashQaBusy = false;
+async function askDashboardQuestion(){
+  const input = document.getElementById('dashQaInput');
+  const log = document.getElementById('dashQaLog');
+  const btn = document.getElementById('dashQaAskBtn');
+  if(!input || !log) return;
+  const question = input.value.trim();
+  if(!question){ toast(t('toast_dash_qa_empty')); return; }
+  if(dashQaBusy) return;
+  if(!sb || !BACKEND_ENABLED){ toast(t('toast_ai_unavailable')); return; }
+  dashQaBusy = true;
+  btn.disabled = true;
+  log.insertAdjacentHTML('beforeend', `<div class="msg-bubble mine">${escapeHtml(question)}</div>`);
+  const loadingId = 'dashQaLoading' + Date.now();
+  log.insertAdjacentHTML('beforeend', `<div class="msg-bubble theirs" id="${loadingId}">${escapeHtml(t('dash_qa_loading'))}</div>`);
+  log.scrollTop = log.scrollHeight;
+  input.value = '';
+  try{
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) throw new Error('Not signed in');
+    const res = await fetch(`${SUPABASE_EDGE_URL}/dashboard-qa`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ question, snapshot: buildDashboardSnapshot() })
+    });
+    const result = await res.json();
+    const loadingEl = document.getElementById(loadingId);
+    if(!res.ok || result.error){
+      if(loadingEl) loadingEl.textContent = result.error || t('toast_dash_qa_unavailable');
+    } else if(loadingEl){
+      loadingEl.textContent = result.answer;
+    }
+  } catch(err){
+    console.error('askDashboardQuestion', err);
+    const loadingEl = document.getElementById(loadingId);
+    if(loadingEl) loadingEl.textContent = t('toast_dash_qa_unavailable');
+  } finally{
+    dashQaBusy = false;
+    btn.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
 async function adminInviteUser(){
   const name = document.getElementById('newUserName').value.trim();
   const email = document.getElementById('newUserEmail').value.trim();
@@ -2314,8 +2461,8 @@ async function renderUsersTable(){
     </tr>`).join('') || `<tr><td colspan="4" class="small-note">No users yet.</td></tr>`;
   renderOrgsList();
 }
-// Dropdown on each recycler row for joining or leaving an organisation.
-// Inline instead of a modal since it's a quick admin action.
+// The dropdown a recycler row uses to join (or leave) an organisation. Kept
+// small and inline rather than a modal, since this is a one-off admin task.
 function recyclerOrgControl(u){
   const options = RECYCLER_ORGS.map(o => `<option value="${o.id}" ${o.id === u.org_id ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('');
   return `<select class="rv-fix" style="margin-left:6px;max-width:170px;display:inline-block;" onchange="adminAssignOrg('${u.id}', this.value)">
@@ -2507,9 +2654,10 @@ function cpTagList(items){
   const tr = currentLang === 'es' ? (s)=>(CP_ES[s]||s) : (s)=>s;
   return '<div class="cp-tags">' + items.map(i=>`<span class="pill">${escapeHtml(tr(i))}</span>`).join('') + '</div>';
 }
-// Spanish translations for the free-text values in CRITICAL_POINTS. Most
-// phrases repeat across the 14 points (waste types, zone conditions, actors,
-// interventions), so one flat dictionary covers them all.
+// Translation lookup for the free-text values inside CRITICAL_POINTS.Most
+// phrases repeat across the 14 points (waste types, zone conditions, actor
+// categories, intervention types), so a flat dictionary covers the field
+// content without duplicating all 14 records in a second language.
 const CP_ES = {
   "Yes":"Sí", "No":"No", "Not reported":"No reportado", "Not quantified":"No cuantificado",
   "Yes - mainly vectors":"Sí - principalmente vectores", "Yes - flies and rodents":"Sí - moscas y roedores",
@@ -2752,10 +2900,12 @@ const TYPE_RULES = [
   {kw:["box","boxes","caja","cajas","carton","cartons"], type:"Boxes / Packaging", effort:5, recyclable:true, bulky:false},
 ];
 
-// Report type strings (Mattress, Sofa / Upholstered furniture, etc.) are the
-// canonical English names used in the logic above, so they're translated at
-// display time only. Any type the AI returns that isn't listed here is shown
-// exactly as the AI wrote it.
+// Report "type" strings (Sofa / Upholstered furniture, Mattress, etc) are
+// the canonical English names used throughout the logic above, so they are
+// translated for display only, right here, rather than storing a localized
+// copy anywhere. Anything the AI returns that isn't in this list (a specific
+// object name it invented) is shown exactly as the AI wrote it, in whichever
+// language it answered in.
 const TYPE_TRANSLATIONS_ES = {
   "Air Conditioner":"Aire acondicionado", "Appliance":"Electrodoméstico", "Bag / Backpack":"Bolso / Mochila",
   "Bed frame":"Base de cama", "Bicycle":"Bicicleta", "Boxes / Packaging":"Cajas / Embalaje", "Cabinet":"Gabinete",
@@ -2858,10 +3008,20 @@ const WASTE_TYPE_ICON_SVG = {
 
 let reportSeq = 1;
 let pointsLedger = {}; // citizenName -> points
+// Citywide totals for Leaderboard and Community Impact come from safe
+// aggregate RPCs (get_leaderboard, get_public_impact_stats), not from
+// scanning REPORTS: now that reports are scoped per role server-side, a
+// citizen's own REPORTS only contains their own reports and marketplace
+// listings, which isn't enough to rank every citizen or show city totals.
+// Both fall back to the REPORTS-derived numbers below when the RPC hasn't
+// loaded yet (or the backend is disabled, e.g. demo mode), so nothing
+// breaks for accounts where that fallback already has the full picture.
+let leaderboardLedger = null;
+let signedInImpactStats = null;
 const CITIZENS = ["Camila R.","Andrés G.","Valentina P.","Julián M.","Daniela S.","Santiago V.","Laura T.","Mateo H."];
 let currentCitizenName = "You"; // set at login from the name field; default matches the "You" label
 let myUserId = null; // the logged-in Supabase auth user's id, used to recognize our own reports in the Realtime feed
-let pendingLoginRole = null; // role waiting on the name prompt; setRole() runs once a name is saved
+let pendingLoginRole = null; // holds the role while the name-safety-net modal is up, then setRole() runs once a name is saved
 let pendingMarketplaceAction = null; // {id, action} set when a signed-out visitor clicks Buy/Claim on the public marketplace
 let pendingMessageAction = null; // {reportId, otherUserId, otherName, itemLabel} set when a signed-out visitor clicks Message
 let displayNameById = {}; // account id -> current display name, kept fresh via the profiles-live subscription
@@ -2934,8 +3094,9 @@ function decideRoute(rule, condition, citizenWantsSale){
 
 function determineAutoRoute(r){
   if(r.flaggedHazard) return 'disposal';
-  // Bagged household waste isn't reusable or repairable whatever condition the
-  // AI guesses, so it goes straight to disposal instead of condition-based routing.
+  // Mixed household waste in bags isn't reusable or repairable, whatever
+  // condition the AI happens to guess, so it skips straight to disposal
+  // rather than following the condition-based routing used for actual items.
   if(r.type === 'Household waste (bagged)') return 'disposal';
   if(r.condition === 'fair') return 'repair';
   const rule = TYPE_RULES.find(rule=>rule.type === r.type);
@@ -2988,9 +3149,9 @@ async function restoreSessionIfAny(session){
 }
 function subscribeToBackendChanges(){
   if(!sb) return;
-  // Remove existing channels first. This runs on every sign-in/out, and old
-  // subscriptions keep running (and double-firing) unless they're cleaned up
-  // before new ones open.
+  // Tear down any previous channels first: this gets called again on every
+  // sign-in/out, and Supabase will happily leave old subscriptions running
+  // (and double-firing) if we don't clean up before opening new ones.
   if(reportsChannel) sb.removeChannel(reportsChannel);
   if(profilesChannel) sb.removeChannel(profilesChannel);
   reportsChannel = sb.channel('reports-live')
@@ -3141,6 +3302,25 @@ function escapeHtml(str){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+// Markup for the "no photo" placeholder, shared between a report that
+// never had a photo and a photo that failed to load (see thumbImgError
+// below) - both end up looking the same rather than a browser's broken-
+// image icon.
+function thumbPlaceholderHtml(title){
+  return `<div class="item-thumb-placeholder" title="${escapeHtml(title||t('no_photo_available'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>`;
+}
+// A stored photo URL can fail to load - a format this browser can't
+// decode, a deleted storage object, a network blip - and without this, a
+// failed <img> shows the browser's own broken-image icon instead. Swapping
+// it for the same placeholder used when there's no photo at all keeps a
+// broken photo from being the thing people notice first.
+function thumbImgError(el){
+  el.onerror = null;
+  // Replaces only the <img> itself, never a wrapping element, so a
+  // multi-photo "+N" badge or a remove button sitting next to it in the
+  // same wrapper is left in place.
+  el.outerHTML = thumbPlaceholderHtml(el.alt);
+}
 function renderThumb(photoDataUrl, altText, fallbackIconSvg){
   const photos = Array.isArray(photoDataUrl) ? photoDataUrl.filter(Boolean) : (photoDataUrl ? [photoDataUrl] : []);
   if(photos.length){
@@ -3148,7 +3328,7 @@ function renderThumb(photoDataUrl, altText, fallbackIconSvg){
       ? `<span style="position:absolute;bottom:1px;right:1px;background:rgba(0,0,0,0.65);color:#fff;font-size:9px;font-family:var(--font-mono);padding:1px 4px;border-radius:4px;line-height:1.4;">+${photos.length-1}</span>`
       : '';
     return `<div style="position:relative;display:inline-block;">
-      <img class="item-thumb" src="${photos[0]}" alt="${escapeHtml(altText||'')}" onclick='openLightboxGallery(${JSON.stringify(photos)}, 0, ${JSON.stringify(altText||'')})'>
+      <img class="item-thumb" src="${photos[0]}" alt="${escapeHtml(altText||'')}" onerror="thumbImgError(this)" onclick='openLightboxGallery(${JSON.stringify(photos)}, 0, ${JSON.stringify(altText||'')})'>
       ${extra}
     </div>`;
   }
@@ -3157,13 +3337,13 @@ function renderThumb(photoDataUrl, altText, fallbackIconSvg){
       <svg viewBox="0 0 64 64" width="32" height="32">${fallbackIconSvg}</svg>
     </div>`;
   }
-  return `<div class="item-thumb-placeholder" title="${escapeHtml(t('no_photo_available'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>`;
+  return thumbPlaceholderHtml();
 }
 
 function renderRemovableThumb(photoDataUrl, altText, onRemoveJsCall){
   if(!photoDataUrl) return renderThumb(photoDataUrl, altText);
   return `<div style="position:relative;width:52px;height:52px;flex-shrink:0;">
-    <img class="item-thumb" src="${photoDataUrl}" alt="${escapeHtml(altText||'')}" onclick="openLightbox(this.src, this.alt)">
+    <img class="item-thumb" src="${photoDataUrl}" alt="${escapeHtml(altText||'')}" onerror="thumbImgError(this)" onclick="openLightbox(this.src, this.alt)">
     <button type="button" onclick="${onRemoveJsCall}" title="${escapeHtml(t('remove_photo'))}"
       style="position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid var(--basalt);cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
   </div>`;
@@ -3325,11 +3505,14 @@ function renderStackedBarList(containerId, rows, seriesMeta){
 const TRANSLATIONS = {
 en: {
   hero_eyebrow:"Challenge 6 · Bogotá Bulky Waste Governance",
-  // Public marketing site strings (nav and all six pages).
+  // Public marketing site strings (nav + all 6 pages), grouped here together
+  // since they share no keys with the signed-in app above them.
   nav_home:"Home", nav_about:"About", nav_events:"Events", nav_donate:"Donate", nav_contact:"Contact Us", nav_sign_in:"Sign in",
   install_title:"Install Oracle Net", install_btn:"Install",
   install_body_android:"Add it to your home screen for one-tap access, even with a weak connection.",
+  install_body_desktop:"Install it as an app for quicker, one-click access from your taskbar or dock.",
   install_body_ios:"Tap the Share icon, then \"Add to Home Screen\", for one-tap access any time.",
+  install_body_mac_safari:"Click the Share icon in the toolbar, then \"Add to Dock\", for one-click access any time.",
   msg_thread_title:"Message", msg_placeholder:"Write a message...", btn_send:"Send", msg_empty:"No messages yet. Say hello.",
   toast_signin_to_message:"Sign in as a citizen to send a message.", msg_load_error:"Could not load this conversation.", msg_send_error:"Message could not be sent, please try again.",
   btn_message_seller:"Message seller", btn_message_donor:"Message donor", btn_message_repairer:"Message repairer",
@@ -3438,6 +3621,10 @@ en: {
   toast_items_logged_suffix:"items logged", label_item_number_prefix:"Item",
   btn_send_report:"Send report",
   photos_selected_suffix:"photos selected", toast_max_photos:"Maximum of 5 photos per report.",
+  toast_photo_format_unsupported:"This photo's format isn't supported by this browser. Try a different photo, or take one with the camera button instead.",
+  toast_mic_unavailable:"Couldn't access the microphone. Check your browser's microphone permission and try again.",
+  toast_voice_transcribe_failed:"Couldn't transcribe that recording, please try again or type instead.",
+  toast_voice_empty:"Didn't catch anything in that recording, please try again.",
 
 
 
@@ -3569,14 +3756,52 @@ en: {
   btn_confirm_pickup:"Confirm pickup", status_awaiting:"awaiting pickup", status_confirmed:"confirmed",
   toast_pickup_confirmed:"Pickup confirmed for",
   status_pending:"pending", status_collected:"collected", status_marketplace:"marketplace",
-  footer_text:"ORACLE NET PROTOTYPE | Item classification uses a vision AI model, hotspot scores are rule-based, and air quality and the reporting channels are simulated."
+  footer_text:"ORACLE NET PROTOTYPE | Item classification uses a vision AI model, hotspot scores are rule-based, and air quality and the reporting channels are simulated.",
+  nav_assist:"Assisted Reporting",
+  assist_chat_title:"Assisted Reporting",
+  assist_chat_desc:"File a report for someone without a smartphone by typing, speaking, or tapping a choice.",
+  report_assist_crosslink_text:"Filing this for someone who has no smartphone?", report_assist_crosslink_cta:"Use Assisted Reporting",
+  assist_report_crosslink_text:"Reporting your own waste?", assist_report_crosslink_cta:"Use Report Waste",
+  assist_chat_intro:"Hi, let's file this report together. First, what's the item, and what's wrong with it or what condition is it in?",
+  assist_ph_description:"e.g. Wooden dining chair, one leg broken",
+  assist_label_item:"Item", assist_label_locality:"Locality",
+  assist_mic_title:"Speak instead of typing",
+  assist_btn_next:"Next",
+  assist_ask_photo:"Do you have a photo of the item?",
+  assist_btn_add_photo:"📷 Add a photo",
+  assist_btn_skip:"Skip",
+  assist_photo_attached:"Photo attached",
+  assist_ask_locality:"Which locality or address is it at?",
+  assist_ph_locality:"e.g. Suba, or a street address",
+  assist_ask_name:"What's the person's name?",
+  assist_ph_name:"e.g. Marta Rodríguez",
+  assist_ask_phone:"What's their phone number (WhatsApp or SMS)?",
+  assist_ph_phone:"e.g. 300 123 4567",
+  assist_ask_channel:"How did they ask for help?",
+  assist_confirm_intro:"Here's what I have. Ready to submit?",
+  assist_btn_submit:"Submit report",
+  assist_btn_restart:"Start over",
+  assist_btn_file_another:"File another report",
+  assist_submitting:"Submitting...",
+  assist_done:"Filed!",
+  assist_done_unconfirmed:"The report was sent. Check My Reports to confirm it went through.",
+  toast_assist_desc_missing:"Describe the item first.",
+  dash_qa_title:"Ask the dashboard",
+  dash_qa_desc:"Answers come only from the figures already shown on this page, so they always match what you see here.",
+  dash_qa_placeholder:"e.g. Which locality has the slowest response time?",
+  btn_dash_qa_ask:"Ask",
+  dash_qa_loading:"Thinking...",
+  toast_dash_qa_empty:"Type a question first.",
+  toast_dash_qa_unavailable:"Couldn't get an answer right now, please try again."
 },
 es: {
   hero_eyebrow:"Reto 6 · Gobernanza de Residuos Voluminosos de Bogotá",
   nav_home:"Inicio", nav_about:"Acerca de", nav_events:"Eventos", nav_donate:"Donar", nav_contact:"Contáctanos", nav_sign_in:"Iniciar sesión",
   install_title:"Instala Oracle Net", install_btn:"Instalar",
   install_body_android:"Agrégala a tu pantalla de inicio para acceso con un toque, incluso con conexión débil.",
+  install_body_desktop:"Instálala como aplicación para un acceso más rápido desde tu barra de tareas o dock.",
   install_body_ios:"Toca el ícono de Compartir y luego \"Agregar a pantalla de inicio\" para acceso con un toque.",
+  install_body_mac_safari:"Haz clic en el ícono de Compartir en la barra de herramientas y luego en \"Añadir al Dock\" para acceso con un clic.",
   msg_thread_title:"Mensaje", msg_placeholder:"Escribe un mensaje...", btn_send:"Enviar", msg_empty:"Aún no hay mensajes. Saluda.",
   toast_signin_to_message:"Inicia sesión como ciudadano para enviar un mensaje.", msg_load_error:"No se pudo cargar esta conversación.", msg_send_error:"No se pudo enviar el mensaje, inténtalo de nuevo.",
   btn_message_seller:"Mensaje al vendedor", btn_message_donor:"Mensaje al donante", btn_message_repairer:"Mensaje al reparador",
@@ -3685,6 +3910,10 @@ es: {
   toast_items_logged_suffix:"artículos registrados", label_item_number_prefix:"Artículo",
   btn_send_report:"Enviar reporte",
   photos_selected_suffix:"fotos seleccionadas", toast_max_photos:"Máximo de 5 fotos por reporte.",
+  toast_photo_format_unsupported:"Este navegador no admite el formato de esta foto. Prueba con otra foto, o toma una con el botón de cámara.",
+  toast_mic_unavailable:"No se pudo acceder al micrófono. Revisa el permiso de micrófono de tu navegador e intenta de nuevo.",
+  toast_voice_transcribe_failed:"No se pudo transcribir esa grabación, intenta de nuevo o escribe en su lugar.",
+  toast_voice_empty:"No se captó nada en esa grabación, intenta de nuevo.",
 
 
 
@@ -3816,7 +4045,43 @@ es: {
   btn_confirm_pickup:"Confirmar recolección", status_awaiting:"pendiente de recolección", status_confirmed:"confirmado",
   toast_pickup_confirmed:"Recolección confirmada para",
   status_pending:"pendiente", status_collected:"recolectado",
-  footer_text:"PROTOTIPO ORACLE NET | La clasificación de objetos usa un modelo de IA de visión, los puntajes de puntos críticos se basan en reglas, y la calidad del aire y los canales de reporte son simulados."
+  footer_text:"PROTOTIPO ORACLE NET | La clasificación de objetos usa un modelo de IA de visión, los puntajes de puntos críticos se basan en reglas, y la calidad del aire y los canales de reporte son simulados.",
+  nav_assist:"Reporte Asistido",
+  assist_chat_title:"Reporte Asistido",
+  assist_chat_desc:"Radica un reporte por alguien sin smartphone escribiendo, hablando o tocando una opción.",
+  report_assist_crosslink_text:"¿Estás radicando esto por alguien sin smartphone?", report_assist_crosslink_cta:"Usa Reporte Asistido",
+  assist_report_crosslink_text:"¿Estás reportando tu propio residuo?", assist_report_crosslink_cta:"Usa Reportar Residuo",
+  assist_chat_intro:"Hola, radiquemos este reporte juntos. Primero, ¿cuál es el objeto y qué le pasa o en qué estado está?",
+  assist_ph_description:"ej. Silla de comedor de madera, una pata rota",
+  assist_label_item:"Objeto", assist_label_locality:"Localidad",
+  assist_mic_title:"Habla en vez de escribir",
+  assist_btn_next:"Siguiente",
+  assist_ask_photo:"¿Tienes una foto del objeto?",
+  assist_btn_add_photo:"📷 Agregar foto",
+  assist_btn_skip:"Omitir",
+  assist_photo_attached:"Foto adjuntada",
+  assist_ask_locality:"¿En qué localidad o dirección está?",
+  assist_ph_locality:"ej. Suba, o una dirección exacta",
+  assist_ask_name:"¿Cómo se llama la persona?",
+  assist_ph_name:"ej. Marta Rodríguez",
+  assist_ask_phone:"¿Cuál es su número de teléfono (WhatsApp o SMS)?",
+  assist_ph_phone:"ej. 300 123 4567",
+  assist_ask_channel:"¿Cómo pidió ayuda?",
+  assist_confirm_intro:"Esto es lo que tengo. ¿Listo para enviar?",
+  assist_btn_submit:"Enviar reporte",
+  assist_btn_restart:"Empezar de nuevo",
+  assist_btn_file_another:"Radicar otro reporte",
+  assist_submitting:"Enviando...",
+  assist_done:"¡Radicado!",
+  assist_done_unconfirmed:"El reporte se envió. Revisa Mis Reportes para confirmar que se registró.",
+  toast_assist_desc_missing:"Describe el objeto primero.",
+  dash_qa_title:"Pregúntale al tablero",
+  dash_qa_desc:"Las respuestas usan solo las cifras que ya se muestran en esta página, así que siempre coinciden con lo que ves aquí.",
+  dash_qa_placeholder:"ej. ¿Qué localidad tiene el tiempo de respuesta más lento?",
+  btn_dash_qa_ask:"Preguntar",
+  dash_qa_loading:"Pensando...",
+  toast_dash_qa_empty:"Escribe una pregunta primero.",
+  toast_dash_qa_unavailable:"No se pudo obtener una respuesta, intenta de nuevo."
 },
 };
 
@@ -4076,8 +4341,8 @@ async function attemptLogin(){
   }
 
   errEl.textContent = '';
-  // Signed in, so the full report list is visible: load it (and the display
-  // names for the leaderboard) before drawing the dashboard.
+  // Now that we're signed in the full report list is visible to us, so load
+  // it (and the display names for the leaderboard) before drawing the dashboard.
   if(BACKEND_ENABLED){
     await Promise.all([refreshReportsFromBackend(), loadDisplayNames()]);
   }
@@ -4190,6 +4455,16 @@ function showPublicTab(name){
   if(name === 'marketplace') renderPublicMarketplace();
   window.scrollTo({top:0, behavior:'smooth'});
 }
+// Shared with the onerror fallback below, so a broken photo swaps back to
+// the same route icon the card would have shown with no photo at all,
+// rather than Chrome's own broken-image icon.
+const PUBMARKET_ICON_REPAIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>';
+const PUBMARKET_ICON_SELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
+const PUBMARKET_ICON_DONATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8c-1.5-3-5-4-5-1.3C7 8 9 8 12 8z"/><path d="M12 8c1.5-3 5-4 5-1.3C17 8 15 8 12 8z"/></svg>';
+function publicMarketIconHtml(route){
+  const icon = route==='repair' ? PUBMARKET_ICON_REPAIR : route==='sell' ? PUBMARKET_ICON_SELL : PUBMARKET_ICON_DONATE;
+  return `<div class="public-market-icon">${icon}</div>`;
+}
 function renderPublicMarketplace(){
   const grid = document.getElementById('publicMarketplaceGrid');
   if(!grid) return;
@@ -4198,10 +4473,7 @@ function renderPublicMarketplace(){
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;text-align:center;padding:48px 20px;border:1px dashed var(--line);border-radius:18px;background:#fff;color:var(--ink-dim);">${t('pubmarket_empty')}</div>`;
     return;
   }
-  const ICON_REPAIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>';
-  const ICON_SELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
-  const ICON_DONATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8c-1.5-3-5-4-5-1.3C7 8 9 8 12 8z"/><path d="M12 8c1.5-3 5-4 5-1.3C17 8 15 8 12 8z"/></svg>';
-  const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||t('pubmarket_item_default_desc'),price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?ICON_REPAIR:r.route==='sell'?ICON_SELL:ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0]),ownerId:r.route==='repair'?r.handledBy:r.reportedBy}));
+  const items = live.slice(0,12).map(r=>({id:r.id,type:r.type,description:r.description||t('pubmarket_item_default_desc'),price:r.price ?? r.askingPrice,route:r.route,icon:r.route==='repair'?PUBMARKET_ICON_REPAIR:r.route==='sell'?PUBMARKET_ICON_SELL:PUBMARKET_ICON_DONATE,photo:r.repairPhotoDataUrl||((r.photoDataUrls||[])[0]),ownerId:r.route==='repair'?r.handledBy:r.reportedBy}));
   grid.innerHTML = items.map(item=>{
     const actionLabel = item.route === 'reuse' ? t('pubmarket_claim_it') : t('pubmarket_buy_it');
     const actionCall = item.route === 'reuse' ? `publicBuyOrClaim(${item.id},'claim')` : `publicBuyOrClaim(${item.id},'buy')`;
@@ -4215,7 +4487,7 @@ function renderPublicMarketplace(){
     const messageBtn = item.ownerId
       ? `<button type="button" class="ghost" style="flex:1;" onclick="openMessageThread(${item.id}, '${item.ownerId}', null, '${itemLabelText}')">${messageLabel}</button>`
       : '';
-    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}">` : `<div class="public-market-icon">${item.icon}</div>`}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;">${messageBtn}<button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
+    return `<article class="public-market-card">${item.photo ? `<img src="${escapeHtml(item.photo)}" alt="${typeLabel}" onerror='this.outerHTML=publicMarketIconHtml(${JSON.stringify(item.route)})'>` : publicMarketIconHtml(item.route)}<div class="public-market-body"><span class="pill ${item.route==='repair'?'repair':item.route==='sell'?'sell':'reuse'}">${tagLabel}</span><h3>${typeLabel}</h3><p>${escapeHtml(item.description)}</p><strong>${priceLabel}</strong><div style="display:flex;gap:8px;margin-top:10px;">${messageBtn}<button type="button" class="primary" style="flex:1;" onclick="${actionCall}">${actionLabel}</button></div></div></article>`;
   }).join('');
 }
 
@@ -4245,9 +4517,9 @@ async function openMarketplaceDetails(reportId){
     <p style="margin:6px 0;"><b>Pickup address:</b> ${escapeHtml(d.exact_address || 'Not provided')}</p>
   `;
 }
-// Admin/repairer/recycler counterpart to openMarketplaceDetails: shows who
-// reported the item and how to reach them, for finding and collecting it
-// (not for a marketplace exchange).
+// The admin/repairer/recycler equivalent of openMarketplaceDetails above:
+// who reported this item and how to reach them, for actually finding and
+// collecting it, not for a marketplace exchange.
 async function openReporterDetails(reportId){
   const modal = document.getElementById('contactDetailsModal');
   const body = document.getElementById('contactDetailsBody');
@@ -4276,11 +4548,12 @@ function closeContactDetailsModal(){
 }
 
 
-// Marketplace messaging: a potential buyer can ask a seller, donor or
-// repairer about an item before anything is agreed, so phone numbers and
-// addresses aren't shown to everyone who clicks through. Exact contact
-// details are revealed through the contact-details modal once an item is
-// reserved, since that step is about coordinating a real pickup.
+// Marketplace messaging: lets a potential buyer ask a seller, donor or
+// repairer about an item before either side has agreed to anything, rather
+// than showing a phone number and address to anyone who clicks through.
+// Exact contact details still get revealed once an item is actually
+// reserved, via the existing contact-details modal, since that part is
+// about coordinating a real pickup, not browsing.
 let activeMsgThread = null; // { reportId, otherUserId }
 function msgTimeLabel(iso){
   const d = new Date(iso);
@@ -4317,8 +4590,9 @@ async function openMessageThread(reportId, otherUserId, otherName, itemLabel){
   const { data, error } = await sb.rpc('get_thread_messages', { p_report_id: reportId, p_other_user_id: otherUserId });
   if(error){ document.getElementById('msgThreadBody').innerHTML = `<div class="msg-thread-empty">${t('msg_load_error')}</div>`; return; }
   renderThreadMessages(data || []);
-  // Refresh the thread list so the unread badge updates right away, even when
-  // the thread was opened from a marketplace listing instead of the panel.
+  // Refresh rather than just mark-and-forget, so the unread badge updates
+  // immediately even when the thread was opened directly from a
+  // marketplace listing rather than from the threads panel itself.
   sb.rpc('mark_thread_read', { p_report_id: reportId, p_other_user_id: otherUserId })
     .then(()=>loadMessageThreads())
     .catch(()=>{});
@@ -4397,20 +4671,29 @@ function applyRoleVisibility(){
 }
 
 
+function goToTab(tabName){
+  const btn = document.querySelector('.tab-btn[data-tab="'+tabName+'"]');
+  const panel = document.getElementById('tab-'+tabName);
+  if(!btn || !panel) return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  panel.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderAll();
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     if(btn.dataset.scrollTop){ window.scrollTo({top:0, behavior:'smooth'}); return; }
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-    renderAll();
+    goToTab(btn.dataset.tab);
   });
 });
 
 
 const localitySelect = document.getElementById('locality');
 const localityOtherInput = document.getElementById('localityOther');
+const localityOtherRow = document.getElementById('localityOtherRow');
 LOCALITIES.forEach(l=>{
   const o = document.createElement('option'); o.value = l; o.textContent = l;
   localitySelect.appendChild(o);
@@ -4423,7 +4706,7 @@ localitySelect.appendChild(otherOpt);
 
 localitySelect.addEventListener('change', ()=>{
   const isOther = localitySelect.value === '__other__';
-  localityOtherInput.style.display = isOther ? 'block' : 'none';
+  if(localityOtherRow) localityOtherRow.style.display = isOther ? 'flex' : 'none';
   const otherNote = document.getElementById('localityOtherNote');
   if(otherNote) otherNote.style.display = isOther ? 'block' : 'none';
   if(isOther) localityOtherInput.focus();
@@ -4582,7 +4865,10 @@ function renderWasteItemRows(){
     }</div>` : '';
     return `<div class="card" style="padding:14px;margin-bottom:10px;background:var(--basalt-2);">
       <label style="margin:0 0 6px;">${i===0 ? t('label_waste_item_first') : t('label_waste_item') + ' ' + (i+1)}</label>
-      <textarea class="witem-desc" data-index="${i}" data-i18n-placeholder="placeholder_description" placeholder="${escapeHtml(t('placeholder_description'))}">${escapeHtml(item.desc)}</textarea>
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <textarea class="witem-desc" id="witemDesc_${i}" data-index="${i}" data-i18n-placeholder="placeholder_description" placeholder="${escapeHtml(t('placeholder_description'))}" style="flex:1;">${escapeHtml(item.desc)}</textarea>
+        ${micButtonHtml('witemDesc_'+i)}
+      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
         <button type="button" class="ghost" onclick="openWasteItemCamera(${i})">${t('btn_take_photo_short')}</button>
         <label class="ghost" style="cursor:pointer;display:inline-flex;align-items:center;margin:0;">
@@ -4625,6 +4911,38 @@ function removeWasteItemPhoto(itemIndex, photoIndex){
   renderWasteItemRows();
 }
 
+// A file picked from an upload input isn't always in a format every
+// browser can display. An iPhone photo chosen from the Photos library
+// (rather than taken with this page's own camera capture, which already
+// produces JPEG) commonly comes through as HEIC/HEIF, which Chrome,
+// Firefox and Android can't decode - the upload itself succeeds, but the
+// photo then shows as a broken image to everyone except whoever picked it
+// in a browser that can read that format. Every picked file is redrawn
+// through a canvas into a JPEG before it's stored anywhere, so what ends
+// up in a report is always a format every viewer can show. If the
+// browser that picked the file can't decode it either, the caller is
+// told so it can tell the person, instead of silently storing a photo
+// that will break for other people.
+function normalizeImageFile(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = ()=> reject(new Error('unsupported-image-format'));
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function handleWasteItemFiles(itemIndex, inputEl){
   const files = Array.from(inputEl.files || []);
   inputEl.value = ''; // always reset so re-picking the same file re-fires change
@@ -4643,15 +4961,391 @@ function handleWasteItemFiles(itemIndex, inputEl){
   }
   let pending = toAdd.length;
   toAdd.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = (e)=>{
-      item.photos.push(e.target.result);
+    normalizeImageFile(file).then(dataUrl=>{
+      item.photos.push(dataUrl);
+    }).catch(()=>{
+      toast(t('toast_photo_format_unsupported'));
+    }).finally(()=>{
       pending--;
       if(pending === 0) renderWasteItemRows();
-    };
-    reader.readAsDataURL(file);
+    });
   });
 }
+
+// Assisted Reporting: a conversational entry point for filing a report on
+// behalf of someone else, sitting next to the ordinary form rather than
+// replacing it. It only gathers answers; once the person taps Submit, it
+// fills the same locality, waste-item and assisted-filer fields the form
+// itself uses and triggers the form's own Send button, so the report goes
+// through the exact classification and save path an ordinary report does.
+const ASSIST_CHANNEL_OPTIONS = ['phone_line','ecopunto','field_crew','neighbour','cooperative','other'];
+let assistChat = null;
+function assistBotSay(html){
+  const log = document.getElementById('assistChatLog');
+  if(!log) return;
+  log.insertAdjacentHTML('beforeend', `<div class="msg-bubble theirs">${html}</div>`);
+  log.scrollTop = log.scrollHeight;
+}
+function assistUserSay(text){
+  const log = document.getElementById('assistChatLog');
+  if(!log) return;
+  log.insertAdjacentHTML('beforeend', `<div class="msg-bubble mine">${escapeHtml(text)}</div>`);
+  log.scrollTop = log.scrollHeight;
+}
+// Shared by every text input in the app that accepts voice as well as
+// typing (Assisted Reporting's questions, the dashboard Q&A box). Chrome,
+// Edge and Android have a live, on-device speech recognition API; Safari
+// (iOS and macOS) and Firefox implement none of it, so for them this
+// records a short clip instead and sends it to the transcribe-audio edge
+// function. The button itself looks and behaves the same either way - only
+// rendered when at least one of the two paths is actually available, so
+// there is never a mic button that silently does nothing.
+function hasLiveSpeechRecognition(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+function hasRecordableAudio(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+}
+function micButtonHtml(targetId){
+  if(!hasLiveSpeechRecognition() && !hasRecordableAudio()) return '';
+  return `<button type="button" class="ghost voice-mic-btn" id="${targetId}_mic" onclick="startVoiceInput('${targetId}')" title="${escapeHtml(t('assist_mic_title'))}">🎤</button>`;
+}
+function startVoiceInput(targetId){
+  if(hasLiveSpeechRecognition()) startLiveSpeechInput(targetId);
+  else if(hasRecordableAudio()) startRecordedVoiceInput(targetId);
+}
+function startLiveSpeechInput(targetId){
+  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = document.getElementById(targetId);
+  const btn = document.getElementById(targetId + '_mic');
+  if(!input) return;
+  const rec = new Speech();
+  rec.lang = currentLang === 'es' ? 'es-CO' : 'en-US';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  if(btn) btn.classList.add('listening');
+  rec.onresult = (e)=>{
+    input.value = (input.value ? input.value + ' ' : '') + e.results[0][0].transcript;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+  };
+  rec.onerror = () => { if(btn) btn.classList.remove('listening'); };
+  rec.onend = () => { if(btn) btn.classList.remove('listening'); };
+  rec.start();
+}
+// One recording per input at a time: the first tap starts it, the second
+// tap (same button, now showing a stop icon) ends it and sends the clip
+// off for transcription. There's no reliable way to detect "done talking"
+// without a round trip, so this asks for an explicit second tap instead.
+const activeVoiceRecorders = {};
+function startRecordedVoiceInput(targetId){
+  const existing = activeVoiceRecorders[targetId];
+  if(existing){
+    existing.recorder.stop(); // second tap: stop and transcribe
+    return;
+  }
+  if(!sb || !BACKEND_ENABLED){ toast(t('toast_ai_unavailable')); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream=>{
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+    const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    const chunks = [];
+    recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
+    recorder.onstop = async ()=>{
+      stream.getTracks().forEach(tr=>tr.stop());
+      delete activeVoiceRecorders[targetId];
+      const btn = document.getElementById(targetId + '_mic');
+      if(btn){ btn.classList.remove('listening'); btn.textContent = '🎤'; btn.disabled = true; }
+      const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+      await transcribeRecordedAudio(targetId, blob);
+      if(btn) btn.disabled = false;
+    };
+    activeVoiceRecorders[targetId] = { recorder, stream };
+    recorder.start();
+    const btn = document.getElementById(targetId + '_mic');
+    if(btn){ btn.classList.add('listening'); btn.textContent = '⏹'; }
+  }).catch(()=>{
+    toast(t('toast_mic_unavailable'));
+  });
+}
+function blobToBase64(blob){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+async function transcribeRecordedAudio(targetId, blob){
+  const input = document.getElementById(targetId);
+  try{
+    const base64 = await blobToBase64(blob);
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) throw new Error('Not signed in');
+    const res = await fetch(`${SUPABASE_EDGE_URL}/transcribe-audio`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ audio_base64: base64, mime_type: blob.type, lang: currentLang })
+    });
+    const result = await res.json();
+    if(!res.ok || result.error) throw new Error(result.error || 'transcription failed');
+    if(result.text && input){
+      input.value = (input.value ? input.value + ' ' : '') + result.text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.focus();
+    } else if(!result.text){
+      toast(t('toast_voice_empty'));
+    }
+  } catch(err){
+    console.error('transcribeRecordedAudio', err);
+    toast(t('toast_voice_transcribe_failed'));
+  }
+}
+// The dashboard Q&A box is static markup rendered before this script runs,
+// so its mic button (also feature-detected, same as every other one) is
+// filled in here rather than built inline like the assist chat's own
+// steps, which render their own markup as the conversation progresses.
+const dashQaMicSlot = document.getElementById('dashQaMicSlot');
+if(dashQaMicSlot) dashQaMicSlot.innerHTML = micButtonHtml('dashQaInput');
+const localityOtherMicSlot = document.getElementById('localityOtherMicSlot');
+if(localityOtherMicSlot) localityOtherMicSlot.innerHTML = micButtonHtml('localityOther');
+
+function startAssistChat(){
+  assistChat = { step: 'description', description:'', photoDataUrl:null, locality:'', name:'', phone:'', channel:'phone_line' };
+  const log = document.getElementById('assistChatLog');
+  if(log) log.innerHTML = '';
+  assistBotSay(escapeHtml(t('assist_chat_intro')));
+  renderAssistStep();
+}
+function renderAssistStep(){
+  const area = document.getElementById('assistChatInputArea');
+  if(!area || !assistChat) return;
+  const step = assistChat.step;
+  if(step === 'description'){
+    area.innerHTML = `<div class="assist-input-row">
+      <input type="text" id="assistInDesc" placeholder="${escapeHtml(t('assist_ph_description'))}" onkeydown="if(event.key==='Enter') assistSubmitDescription();">
+      ${micButtonHtml('assistInDesc')}
+      <button class="primary" style="margin:0;" onclick="assistSubmitDescription()">${escapeHtml(t('assist_btn_next'))}</button>
+    </div>`;
+    const el = document.getElementById('assistInDesc'); if(el) el.focus();
+  } else if(step === 'photo'){
+    area.innerHTML = `<div class="assist-photo-row">
+      <label class="ghost" style="cursor:pointer;margin:0;">${escapeHtml(t('assist_btn_add_photo'))}
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="assistHandlePhoto(this)">
+      </label>
+      <button class="ghost" style="margin:0;" onclick="assistSkipPhoto()">${escapeHtml(t('assist_btn_skip'))}</button>
+    </div>`;
+  } else if(step === 'locality'){
+    area.innerHTML = `<div class="assist-input-row">
+      <input type="text" id="assistInLocality" placeholder="${escapeHtml(t('assist_ph_locality'))}" onkeydown="if(event.key==='Enter') assistSubmitLocality();">
+      ${micButtonHtml('assistInLocality')}
+      <button class="primary" style="margin:0;" onclick="assistSubmitLocality()">${escapeHtml(t('assist_btn_next'))}</button>
+    </div>`;
+    const el = document.getElementById('assistInLocality'); if(el) el.focus();
+  } else if(step === 'name'){
+    area.innerHTML = `<div class="assist-input-row">
+      <input type="text" id="assistInName" placeholder="${escapeHtml(t('assist_ph_name'))}" onkeydown="if(event.key==='Enter') assistSubmitName();">
+      ${micButtonHtml('assistInName')}
+      <button class="primary" style="margin:0;" onclick="assistSubmitName()">${escapeHtml(t('assist_btn_next'))}</button>
+    </div>`;
+    const el = document.getElementById('assistInName'); if(el) el.focus();
+  } else if(step === 'phone'){
+    area.innerHTML = `<div class="assist-input-row">
+      <input type="text" id="assistInPhone" placeholder="${escapeHtml(t('assist_ph_phone'))}" onkeydown="if(event.key==='Enter') assistSubmitPhone();">
+      <button class="primary" style="margin:0;" onclick="assistSubmitPhone()">${escapeHtml(t('assist_btn_next'))}</button>
+    </div>`;
+    const el = document.getElementById('assistInPhone'); if(el) el.focus();
+  } else if(step === 'channel'){
+    area.innerHTML = `<div class="assist-choice-row">${ASSIST_CHANNEL_OPTIONS.map(c=>
+      `<button class="ghost" onclick="assistSubmitChannel('${c}')">${escapeHtml(t('assist_ch_'+c))}</button>`).join('')}</div>`;
+  } else if(step === 'confirm'){
+    area.innerHTML = `<div class="assist-choice-row">
+      <button class="primary" style="margin:0;" onclick="assistSubmitReport()">${escapeHtml(t('assist_btn_submit'))}</button>
+      <button class="ghost" style="margin:0;" onclick="startAssistChat()">${escapeHtml(t('assist_btn_restart'))}</button>
+    </div>`;
+  } else if(step === 'done'){
+    area.innerHTML = `<div class="assist-choice-row">
+      <button class="primary" style="margin:0;" onclick="startAssistChat()">${escapeHtml(t('assist_btn_file_another'))}</button>
+    </div>`;
+  } else {
+    area.innerHTML = '';
+  }
+}
+function assistSubmitDescription(){
+  const el = document.getElementById('assistInDesc');
+  const val = el ? el.value.trim() : '';
+  if(!val){ toast(t('toast_assist_desc_missing')); return; }
+  assistChat.description = val;
+  assistUserSay(val);
+  assistChat.step = 'photo';
+  assistBotSay(escapeHtml(t('assist_ask_photo')));
+  renderAssistStep();
+}
+async function assistHandlePhoto(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = '';
+  if(!file) return;
+  let dataUrl;
+  try{
+    dataUrl = await normalizeImageFile(file);
+  } catch(err){
+    toast(t('toast_photo_format_unsupported'));
+    return;
+  }
+  assistChat.photoDataUrl = dataUrl;
+  assistUserSay(t('assist_photo_attached'));
+  const log = document.getElementById('assistChatLog');
+  if(log) log.insertAdjacentHTML('beforeend', `<img src="${dataUrl}" class="assist-photo-thumb" alt="">`);
+  assistChat.step = 'locality';
+  assistBotSay(escapeHtml(t('assist_ask_locality')));
+  renderAssistStep();
+}
+function assistSkipPhoto(){
+  assistUserSay(t('assist_btn_skip'));
+  assistChat.step = 'locality';
+  assistBotSay(escapeHtml(t('assist_ask_locality')));
+  renderAssistStep();
+}
+function assistSubmitLocality(){
+  const el = document.getElementById('assistInLocality');
+  const val = el ? el.value.trim() : '';
+  if(!val){ toast(t('toast_locality_missing')); return; }
+  assistChat.locality = val;
+  assistUserSay(val);
+  assistChat.step = 'name';
+  assistBotSay(escapeHtml(t('assist_ask_name')));
+  renderAssistStep();
+}
+function assistSubmitName(){
+  const el = document.getElementById('assistInName');
+  const val = el ? el.value.trim() : '';
+  if(!val){ toast(t('toast_assist_missing')); return; }
+  assistChat.name = val;
+  assistUserSay(val);
+  assistChat.step = 'phone';
+  assistBotSay(escapeHtml(t('assist_ask_phone')));
+  renderAssistStep();
+}
+function assistSubmitPhone(){
+  const el = document.getElementById('assistInPhone');
+  const val = el ? el.value.trim() : '';
+  const digits = val.replace(/\D/g, '');
+  if(digits.length < 7 || digits.length > 15){ toast(t('toast_assist_missing')); return; }
+  assistChat.phone = val;
+  assistUserSay(val);
+  assistChat.step = 'channel';
+  assistBotSay(escapeHtml(t('assist_ask_channel')));
+  renderAssistStep();
+}
+function assistSubmitChannel(channel){
+  assistChat.channel = channel;
+  assistUserSay(t('assist_ch_'+channel));
+  assistChat.step = 'confirm';
+  assistBotSay(assistSummaryHtml());
+  renderAssistStep();
+}
+function assistSummaryHtml(){
+  const a = assistChat;
+  return `${escapeHtml(t('assist_confirm_intro'))}<br>` +
+    `<b>${escapeHtml(t('assist_label_item'))}:</b> ${escapeHtml(a.description)}<br>` +
+    `<b>${escapeHtml(t('assist_label_locality'))}:</b> ${escapeHtml(a.locality)}<br>` +
+    `<b>${escapeHtml(t('assist_name_label'))}:</b> ${escapeHtml(a.name)}<br>` +
+    `<b>${escapeHtml(t('assist_phone_label'))}:</b> ${escapeHtml(a.phone)}`;
+}
+// Fills the real report form's own fields and clicks its own Send button,
+// instead of saving a report by any separate path, so an assisted report
+// goes through the same AI classification and backend save every ordinary
+// report does.
+async function assistSubmitReport(){
+  const a = assistChat;
+  if(!a) return;
+  const localitySelectEl = document.getElementById('locality');
+  const localityOtherEl = document.getElementById('localityOther');
+  const localityOtherRowEl = document.getElementById('localityOtherRow');
+  const exactMatch = LOCALITIES.find(l => l.toLowerCase() === a.locality.toLowerCase());
+  if(exactMatch){
+    localitySelectEl.value = exactMatch;
+    if(localityOtherRowEl) localityOtherRowEl.style.display = 'none';
+    localityOtherEl.value = '';
+  } else {
+    localitySelectEl.value = '__other__';
+    localityOtherEl.value = a.locality;
+    if(localityOtherRowEl) localityOtherRowEl.style.display = 'flex';
+  }
+  updateLocalityOperatorNote();
+
+  wasteItems = [{ desc: a.description, photos: a.photoDataUrl ? [a.photoDataUrl] : [] }];
+  renderWasteItemRows();
+
+  document.querySelectorAll('input[name="marketChoice"]').forEach(el=>{ el.checked = false; });
+  document.getElementById('wantsToSellCheckbox').checked = false;
+  document.getElementById('askingPriceRow').style.display = 'none';
+  document.getElementById('marketContactFields').style.display = 'none';
+
+  document.getElementById('assistedToggle').checked = true;
+  document.getElementById('assistedFields').style.display = 'block';
+  document.getElementById('assistedName').value = a.name;
+  document.getElementById('assistedPhone').value = a.phone;
+  document.getElementById('assistedChannel').value = a.channel;
+
+  const beforeTimestamp = Date.now();
+  assistChat.step = 'submitting';
+  const area = document.getElementById('assistChatInputArea');
+  if(area) area.innerHTML = `<p class="small-note">${escapeHtml(t('assist_submitting'))}</p>`;
+
+  document.getElementById('submitReport').click();
+
+  const created = await assistWaitForReport(beforeTimestamp, a.name);
+  assistChat.step = 'done';
+  if(created){
+    assistBotSay(`✅ ${escapeHtml(t('assist_done'))} #ORC-${created.id}`);
+    // The form's own submit handler already renders the WhatsApp/SMS
+    // confirmation into #assistedConfirm once the save completes (it does
+    // this itself whenever report.assisted is true); this only waits for
+    // that content to appear and moves it into the chat, rather than
+    // building a second copy of it.
+    const box = await assistWaitForConfirmBox();
+    if(box){
+      assistBotSay(box.innerHTML);
+      box.style.display = 'none';
+      box.innerHTML = '';
+    }
+  } else {
+    assistBotSay(escapeHtml(t('assist_done_unconfirmed')));
+  }
+  renderAssistStep();
+}
+// Polls the same REPORTS array the form fills in, since the form's submit
+// handler is async and doesn't hand back the report it creates. Matching on
+// the assisted filer's name plus a timestamp floor is reliable here because
+// only one assisted submission is ever in flight at a time.
+function assistWaitForReport(afterTimestamp, name){
+  return new Promise(resolve=>{
+    let tries = 0;
+    const poll = () => {
+      tries++;
+      const match = REPORTS.find(r => r.assisted && r.assistedName === name && r.timestamp >= afterTimestamp);
+      if(match){ resolve(match); return; }
+      if(tries > 40){ resolve(null); return; }
+      setTimeout(poll, 200);
+    };
+    poll();
+  });
+}
+function assistWaitForConfirmBox(){
+  return new Promise(resolve=>{
+    let tries = 0;
+    const poll = () => {
+      tries++;
+      const box = document.getElementById('assistedConfirm');
+      if(box && box.innerHTML.trim()){ resolve(box); return; }
+      if(tries > 25){ resolve(null); return; }
+      setTimeout(poll, 200);
+    };
+    poll();
+  });
+}
+startAssistChat();
 
 async function openWasteItemCamera(itemIndex){
   const item = wasteItems[itemIndex];
@@ -4785,9 +5479,10 @@ renderChannelGreeting();
 });
 
 
-// Radios can't normally be unchecked once selected. A second click on the
-// already-checked Donate or Sell option clears it, so someone who picked one
-// by mistake isn't forced into the other.
+// Radios don't normally let you uncheck the one already selected, but
+// someone can easily pick Donate or Sell by mistake and want out entirely
+// rather than being forced into the other option, so a second click on the
+// already-checked one clears it.
 function deselectMarketChoiceIfAlreadyChecked(el){
   if(el.dataset.wasChecked === 'true'){
     el.checked = false;
@@ -4991,7 +5686,7 @@ document.getElementById('submitReport').addEventListener('click', async ()=>{
       console.error('Post-submit confirmation UI failed (reports were still saved):', err);
     }finally{
       localityOtherInput.value = '';
-      localityOtherInput.style.display = 'none';
+      if(localityOtherRow) localityOtherRow.style.display = 'none';
       const otherNoteReset = document.getElementById('localityOtherNote');
       if(otherNoteReset) otherNoteReset.style.display = 'none';
       localitySelect.value = LOCALITIES[0];
@@ -5021,10 +5716,11 @@ async function assignReport(id){
   const route = determineAutoRoute(r);
   const prevStatus = r.status, prevRoute = r.route, prevPrice = r.price, prevCollectedAt = r.collectedAt;
   r.route = route;
-  // Repair and recycle items are collected by the repairer/recycler
-  // themselves, so assigning the route doesn't mark them collected; status
-  // flips when they confirm pickup. Disposal and marketplace routes have
-  // nobody else to confirm, so those are marked collected immediately.
+  // Repair and recycle are now collected by the repairer/recycler
+  // themselves, so assigning the route here shouldn't also claim it was
+  // already physically collected; status only flips once they actually
+  // confirm pickup. Disposal and the marketplace routes have nobody else
+  // to confirm, so those still mark collected immediately, as before.
   if(route !== 'repair' && route !== 'recycle'){
     r.status = 'collected';
     r.collectedAt = Date.now();
@@ -5043,7 +5739,7 @@ async function changeRoute(id, newRoute){
   const prevRoute = r.route, prevConfirmed = r.recyclerConfirmed;
   r.route = newRoute || null;
   r.routeOverridden = true;
-  if(newRoute !== 'recycle') r.recyclerConfirmed = false; // clear the confirmation when re-routed away from recycle
+  if(newRoute !== 'recycle') r.recyclerConfirmed = false; // no longer the recycler's item
   renderAll();
   const ok = await rpcReportAction('change_report_route', { p_report_id: id, p_route: r.route });
   if(!ok){ r.route = prevRoute; r.recyclerConfirmed = prevConfirmed; renderAll(); return; }
@@ -5190,10 +5886,11 @@ async function applyRepairPhoto(reportId, dataUrl){
 }
 function handleRepairPhotoSelected(reportId, inputEl){
   const file = inputEl.files && inputEl.files[0];
+  inputEl.value = '';
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (e)=> applyRepairPhoto(reportId, e.target.result);
-  reader.readAsDataURL(file);
+  normalizeImageFile(file)
+    .then(dataUrl => applyRepairPhoto(reportId, dataUrl))
+    .catch(()=> toast(t('toast_photo_format_unsupported')));
 }
 
 
@@ -5235,9 +5932,10 @@ function reporterButtonHtml(r){
   if(!BACKEND_ENABLED || !r.reportedBy) return '';
   return `<button type="button" class="ghost" style="padding:3px 8px;font-size:11px;" onclick="openReporterDetails(${r.id})">${t('btn_view_reporter')}</button>`;
 }
-// True once the role the item was routed to has confirmed receiving it.
-// From then on admin can't reassign it. The server enforces this too; this
-// just hides the control instead of letting it fail after a click.
+// True once whichever role the item was routed to has actually confirmed
+// receiving it, at which point admin can no longer silently reassign it;
+// the server enforces this too, this just keeps the control from being
+// offered in the first place rather than failing after a click.
 function isRouteLocked(r){
   if(r.route === 'recycle' && r.recyclerConfirmed) return true;
   if(r.route === 'repair' && r.repaired) return true;
@@ -5443,9 +6141,10 @@ async function submitReview(allRight){
     hazard_ok: d.hazard, true_hazard: trueHazard,
     updated_at: new Date().toISOString()
   });
-  // The server applies a wrong answer directly to the report so a correction
-  // changes what's shown, not just a log. Mirror that locally so it appears
-  // without waiting for a refresh or realtime update.
+  // The server applies a wrong answer straight to the report (that's the
+  // whole point: a correction should actually change what's shown, not just
+  // log that something was wrong), so mirror that locally too rather than
+  // waiting on the next refresh or a realtime round-trip to see it.
   if(d.type === false && trueType) r.type = trueType;
   if(d.cond === false && trueCond) r.condition = trueCond;
   if(d.hazard === false) r.flaggedHazard = trueHazard;
@@ -5908,8 +6607,9 @@ function renderDashboard(){
     { label: t('legend_items_handled'), color: '#8b6fcf' }
   ]);
 
-  // Payment goes to the organisation, not the individual recycler, so this is
-  // its own view rather than something read off the per-person chart above.
+  // The business model centres on paying the organisation, not the
+  // individual recycler, so this has to be its own view, not just visible
+  // by re-deriving it from the per-person chart above.
   const orgValue = {};
   REPORTS.filter(r=>r.route==='recycle' && r.recyclerConfirmed && r.handledOrgId).forEach(r=>{
     const key = r.handledOrgId;
@@ -5927,7 +6627,8 @@ function renderDashboard(){
 function renderLeaderboard(){
   const card = document.getElementById('leaderboardCard');
   card.innerHTML = '';
-  const sorted = Object.entries(pointsLedger).sort((a,b)=>b[1]-a[1]);
+  const ledgerSource = leaderboardLedger || pointsLedger;
+  const sorted = Object.entries(ledgerSource).sort((a,b)=>b[1]-a[1]);
   const nameFor = key => displayNameById[key] || key;
   const isYouKey = key => myUserId ? key === myUserId : key === currentCitizenName;
 
@@ -6092,9 +6793,10 @@ async function releasePickup(id){
   if(!ok){ r.pickupClaimedBy = prev.by; r.pickupClaimedAt = prev.at; r.pickupClaimOrgId = prev.org; renderAll(); return; }
   toast(t('toast_pickup_released'));
 }
-// Repairer pickup follows the same self-service pattern as recyclers: claim
-// an item so two repairers don't head to the same address, then confirm once
-// it's collected, which unlocks the "mark repaired" step below.
+// Repairer side of the same self-service pickup pattern recyclers already
+// use: claim it so two repairers don't both head to the same address,
+// confirm once you've actually collected it, which is what unlocks the
+// existing "mark repaired" step below.
 async function claimRepairPickup(id){
   const r = REPORTS.find(x=>x.id===id);
   if(!r) return;
@@ -6133,8 +6835,11 @@ async function confirmRepairPickup(id){
 }
 
 
-// Picks what to show in place of a plain "Buy" button, based on whether the
-// item is reserved and by whom relative to the person viewing it.
+// Builds the three marketplace lists a citizen can act on: free donations,
+// items sold directly by their owner, and items a repairer has fixed up.
+// Anything already claimed/sold or off the marketplace is left out.
+// What to show instead of a plain "Buy" button, depending on whether this
+// item is already reserved, and by whom relative to whoever is looking at it.
 function buyActionHtml(r){
   const isMine = r.reportedBy && myUserId && r.reportedBy === myUserId;
   if(isMine && r.buyerId && !r.sold){
@@ -6171,9 +6876,6 @@ function claimActionHtml(r){
   const msgBtn = r.reportedBy ? `<button type="button" class="ghost" onclick="openMessageThread(${r.id}, '${r.reportedBy}', null, '${escapeHtml(translateType(r.type)).replace(/'/g,"\\'")}')">${t('btn_message_donor')}</button> ` : '';
   return `${msgBtn}<button class="ghost" onclick="claimDonation(${r.id})">${t('btn_claim')}</button>`;
 }
-// Builds the three marketplace lists a citizen can act on: free donations,
-// items sold directly by their owner, and items a repairer has fixed up.
-// Anything already claimed/sold or off the marketplace is left out.
 function renderMarketplace(){
   const donationsList = document.getElementById('donationsList');
   const directSaleList = document.getElementById('directSaleList');
@@ -6269,8 +6971,9 @@ function outcomeLine(r){
     case 'recycle':
       return r.recyclerConfirmed ? t('myreports_recycle_confirmed') : t('myreports_recycle_awaiting');
     case 'disposal':
-      // Hazardous material can't legally go to the ordinary landfill with
-      // non-recoverable household waste, so it gets its own message.
+      // Hazardous material legally cannot just go to the ordinary sanitary
+      // landfill alongside non-recoverable household waste, so this has to
+      // say something different, not just reuse the same disposal message.
       return r.flaggedHazard ? t('myreports_disposal_hazard') : t('myreports_disposal');
     default:
       return t('myreports_awaiting_collection');
@@ -6376,9 +7079,11 @@ const CSV_EXPORT_COLUMNS = [
 function exportReports(format){
   const dateStamp = new Date().toISOString().slice(0,10);
   if(format === 'json'){
-    // Built from the same column definitions as the CSV rather than dumping
-    // REPORTS directly, so the two exports always match and neither includes
-    // internal fields such as seed-data markers or inline SVG icon markup.
+    // Built from the exact same column definitions as the CSV, not a raw
+    // dump of REPORTS, so the two exports can never quietly drift apart
+    // (one gaining an organisation name or a review count the other lacks)
+    // and neither leaks internal-only fields like seed-data markers or
+    // inline SVG icon markup that have no place in an analysis file.
     const rows = REPORTS.map(r => {
       const obj = {};
       CSV_EXPORT_COLUMNS.forEach(([name, fn]) => { obj[name] = fn(r); });
@@ -6400,9 +7105,11 @@ function renderRepairerPortal(){
   const listedEl = document.getElementById('repairListedList');
   if(!pickupEl || !queueEl || !listedEl) return;
 
-  // A repairer collects the item themselves from where it was reported.
-  // repairCollected is their confirmation that they picked it up; only then
-  // does it move to "awaiting repair".
+  // A repairer now collects an item themselves from where it was originally
+  // reported, the same self-service pattern recyclers already use, rather
+  // than waiting for someone else to have brought it to them. repairCollected
+  // is the repairer's own confirmation that they actually went and got it;
+  // only after that can it move to "awaiting repair".
   const needsPickup = REPORTS.filter(r=>r.route==='repair' && !r.repairCollected);
   const awaitingRepair = REPORTS.filter(r=>r.route==='repair' && r.repairCollected && !r.repaired);
   const listed = REPORTS.filter(r=>r.route==='repair' && r.repaired);
@@ -6491,12 +7198,15 @@ function renderRepairerPortal(){
 }
 
 
-// Each locality has a fixed baseline, loosely based on differences in
-// traffic and industrial density across Bogotá localities, so the simulated
-// figure doesn't change on reload. Live data adds on top: pending items
-// raise it, hazard-flagged items raise it more (hazardous material is the
-// fire risk), and items left unresolved longer raise it further, since
-// buildup is about accumulation over time, not just the current count.
+// A fixed, stable baseline per locality rather than a flat number for
+// everyone or a random one that would shift on every reload. Loosely
+// reflects known differences in traffic and industrial density across real
+// Bogota localities, since a simulated figure should still vary for a real
+// reason, not arbitrarily. The dynamic part on top is what actually makes
+// it respond to live data: more pending items raises it, a hazard-flagged
+// item raises it more (hazard material is the real fire risk the label
+// refers to), and items sitting unresolved longer raise it further, since
+// "buildup" is about accumulation over time, not just a current count.
 const AQI_LOCALITY_BASELINE = {
   'Puente Aranda':58, 'Kennedy':54, 'Ciudad Bolívar':56, 'Bosa':50, 'Rafael Uribe Uribe':52,
   'Fontibón':48, 'Engativá':46, 'Suba':44, 'Usme':48, 'Santa Fe':50, 'Usaquén':38, 'Chapinero':36,
@@ -6533,6 +7243,17 @@ function renderAQI(){
 function renderCommunityImpact(){
   const el = id => document.getElementById(id);
   if(!el('impactReports')) return;
+  if(signedInImpactStats){
+    const s = signedInImpactStats;
+    el('impactReports').textContent = s.reports_total;
+    el('impactSecondLife').textContent = s.second_life_total;
+    el('impactCitizens').textContent = s.citizens_count;
+    el('impactLocalities').textContent = s.localities_count;
+    el('impactPoints').textContent = Number(s.points_total).toLocaleString();
+    return;
+  }
+  // Fallback for demo mode / before the city-wide stats RPC has loaded:
+  // computed from whatever reports this account can currently see.
   const secondLifeRoutes = ['reuse','repair','sell'];
   const citizens = new Set(REPORTS.map(r=>r.reportedBy || r.citizen).filter(Boolean)).size;
   const localities = new Set(REPORTS.map(r=>r.locality).filter(Boolean)).size;
@@ -6551,16 +7272,18 @@ function renderAll(){
   steps.forEach(fn=>{
     try{ fn(); } catch(err){ console.error('renderAll: ' + fn.name + ' failed', err); }
   });
-  // These functions replace whole sections' innerHTML, which can bring back
-  // overflowing elements, so the overflow check runs again after each render.
-  // Function declarations hoist, so it can be called here even though it's
-  // defined further down.
+  // Content rebuilt here can reintroduce the same kind of overflow already
+  // corrected once on load, since these functions replace entire sections'
+  // innerHTML; function declarations hoist, so calling this is safe even
+  // though it is defined further down in the file.
   if(typeof fixOverflowingElements === 'function') setTimeout(fixOverflowingElements, 60);
 }
-// Safety net for elements wider than a narrow phone screen: finds rendered
-// elements whose right edge extends past the viewport and constrains them.
-// Skips anything meant to scroll or be wide (.table-scroll-wrap, the Leaflet
-// maps, fixed-position modals).
+// A safety net for anything that ends up wider than a narrow phone screen:
+// checks the actual rendered page for elements whose right edge genuinely
+// extends past the viewport, and corrects them directly. Confirmed working
+// on a real device. Deliberately skips anything meant to scroll on its own
+// (.table-scroll-wrap, the Leaflet maps, fixed-position modals) so it never
+// fights a container that is supposed to be wide.
 function fixOverflowingElements(){
   if(window.innerWidth > 900) return; // desktop renders fine; only needed on narrow screens
   const vw = document.documentElement.clientWidth;
@@ -6570,8 +7293,10 @@ function fixOverflowingElements(){
     if(el.offsetWidth === 0 && el.offsetHeight === 0) return; // not actually rendered
     if(getComputedStyle(el).position === 'fixed') return;
     const rect = el.getBoundingClientRect();
-    // Low width floor instead of a fraction of the viewport: the offender can
-    // be as small as a single badge, and the fix is harmless to apply broadly.
+    // A low width floor, not a fraction of the viewport: the actual
+    // culprit can be something as small as a single badge, not
+    // necessarily a large section, and the correction is safe to apply
+    // broadly, so erring toward catching more is the safer direction.
     if(rect.right > vw + 2 && rect.width > 20){
       el.style.maxWidth = '100%';
       el.style.boxSizing = 'border-box';
@@ -6593,9 +7318,10 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 }
 
 // ---- "Install this app" prompt, for Android/desktop Chrome and iOS ----
-// Chromium browsers fire an event we can hold onto and trigger from our own
-// button. iOS has no such event; Safari only installs through Share -> Add
-// to Home Screen, so there we just show where to find it.
+// Chromium browsers fire a real event we can hold onto and trigger later
+// from our own button; iOS has no such event at all, Safari only offers
+// install through its manual Share -> Add to Home Screen, so the most we
+// can do there is show them where to find it.
 let deferredInstallPrompt = null;
 const INSTALL_DISMISS_KEY = 'oracleNetInstallDismissed';
 
@@ -6608,14 +7334,35 @@ function isIOSDevice(){
   // support, which is the standard way to tell the two apart.
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 }
+// A real Mac (not the touch-enabled "Macintosh" UA iPadOS sends, already
+// matched by isIOSDevice above) running Safari. Safari has never fired
+// beforeinstallprompt, on either iOS or macOS, so this is the only way to
+// reach Mac Safari users: Safari 17+ added its own "Add to Dock" install,
+// reached the same way iOS reaches "Add to Home Screen" - through the
+// Share icon - so the instructions are shown rather than waited for.
+function isMacSafari(){
+  const ua = navigator.userAgent || '';
+  if(!/Macintosh/.test(ua) || navigator.maxTouchPoints > 1) return false;
+  return /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Brave/.test(ua);
+}
+// Chrome, Edge and other Chromium browsers fire beforeinstallprompt on
+// desktop too, not just Android - this only decides which banner wording
+// to show ("home screen" doesn't make sense on a laptop), the install
+// button itself calls the same native prompt either way.
+function isMobileDevice(){
+  return /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent || '');
+}
 function installBannerWasDismissedRecently(){
   const raw = localStorage.getItem(INSTALL_DISMISS_KEY);
   if(!raw) return false;
-  // Dismissing hides the banner for 14 days, similar to Chrome's own
-  // re-prompt cooldown.
+  // A dismissal used to be permanent (stored as the literal string '1'),
+  // which meant one tap, even an accidental one while testing, hid it on
+  // that device forever with no way back. Now it only suppresses the
+  // banner for 14 days, like Chrome's own re-prompt cooldown.
   if(raw === '1'){
-    // A stored value of '1' is treated as expired and replaced with a
-    // timestamp so the normal cooldown applies.
+    // Self-heal anyone already stuck on the old permanent flag into a
+    // fresh, time-limited cooldown instead, rather than requiring them to
+    // manually clear their browser's site data to ever see it again.
     localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
     return true;
   }
@@ -6635,14 +7382,22 @@ function showInstallBanner(kind){
   if(kind === 'ios'){
     bodyEl.textContent = t('install_body_ios');
     actionEl.style.display = 'none';
+  } else if(kind === 'mac_safari'){
+    bodyEl.textContent = t('install_body_mac_safari');
+    actionEl.style.display = 'none';
+  } else if(kind === 'desktop'){
+    bodyEl.textContent = t('install_body_desktop');
+    actionEl.textContent = t('install_btn');
+    actionEl.style.display = 'inline-block';
   } else {
     bodyEl.textContent = t('install_body_android');
     actionEl.textContent = t('install_btn');
     actionEl.style.display = 'inline-block';
   }
   banner.style.display = 'flex';
-  // The banner is fixed-position, so pad the page by its rendered height
-  // (text length and safe-area insets vary) to keep it off the nav bar.
+  // Fixed-position, so push the rest of the page down by its real height
+  // (text length and safe-area insets vary) rather than letting it sit on
+  // top of the existing nav bar.
   requestAnimationFrame(() => { document.body.style.paddingTop = banner.offsetHeight + 'px'; });
 }
 function dismissInstallBanner(){
@@ -6663,16 +7418,24 @@ async function triggerInstallPrompt(){
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault();
   deferredInstallPrompt = e;
-  showInstallBanner('android');
+  showInstallBanner(isMobileDevice() ? 'android' : 'desktop');
 });
 window.addEventListener('appinstalled', ()=>{
   deferredInstallPrompt = null;
   dismissInstallBanner();
 });
-if(isIOSDevice() && !isRunningStandalone()){
-  // No install event exists on iOS, so there's nothing to wait for - show
-  // the instructional banner once the page has had a moment to settle.
-  setTimeout(()=>showInstallBanner('ios'), 1200);
+if(!isRunningStandalone()){
+  if(isIOSDevice()){
+    // No install event exists on iOS, so there's nothing to wait for -
+    // show the instructional banner once the page has had a moment to
+    // settle.
+    setTimeout(()=>showInstallBanner('ios'), 1200);
+  } else if(isMacSafari()){
+    // Safari never fires beforeinstallprompt either, on macOS any more
+    // than on iOS, so Mac Safari gets the same kind of instructional
+    // banner instead of waiting for an event that will never come.
+    setTimeout(()=>showInstallBanner('mac_safari'), 1200);
+  }
 }
 </script>
 </body>
